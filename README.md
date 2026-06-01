@@ -18,16 +18,16 @@ First release expected once training completes at 150k steps.
 
 Evaluated on 500 freshly generated German sentences (not in either training corpus):
 
-| Metric | v0.4 @ 80k | v0.5 @ 35k | v0.5 @ 50k |
+| Metric | v0.4 @ 80k | v0.5 @ 50k | v0.5 @ 65k |
 |---|---:|---:|---:|
-| Top-1 Accuracy | 24.5% | 25.3% | **25.8%** |
-| Top-3 Accuracy | 38.9% | 42.7% | **43.4%** |
-| Top-5 Accuracy | 47.3% | 51.7% | **52.6%** |
-| KSR | 19.8% | 21.5% | **22.1%** |
-| Prefix 2 chars → Top-1 | 77.2% | 77.8% | **78.4%** |
-| Prefix 3 chars → Top-1 | 88.2% | 86.7% | **87.9%** |
+| Top-1 Accuracy | 24.5% | **25.8%** | **25.8%** |
+| Top-3 Accuracy | 38.9% | 43.4% | **44.2%** |
+| Top-5 Accuracy | 47.3% | **52.6%** | 52.5% |
+| KSR | 19.8% | **22.1%** | 21.7% |
+| Prefix 2 chars → Top-1 | 77.2% | **78.4%** | 78.3% |
+| Prefix 3 chars → Top-1 | 88.2% | **87.9%** | **87.9%** |
 
-v0.5 @ 50k ≈ end of first epoch. All metrics are new highs. Training continues to 150k steps.
+v0.5 @ 65k ≈ 1.3 epochs. Training continues to 150k steps (~3 epochs total).
 
 ### Quantization comparison — v0.5 @ 5k steps
 
@@ -58,7 +58,8 @@ Q4_0 loses ~1.5% Top-1 and ~1.7% KSR vs F32 — acceptable for a 3× size reduct
 | 25,000 | 1.5668 | 1.0374 |
 | 30,000 | 1.5202 | 1.0028 |
 | 35,000 | 1.5258 | 0.9866 |
-| 50,000 | 1.5001 | **0.9364** |
+| 50,000 | 1.5001 | 0.9364 |
+| 65,000 | 1.4639 | **0.9142** |
 | 80,000 | 1.4327 | — |
 
 Note: loss values are not directly comparable between versions — v0.5 uses a retrained tokenizer (trained on a larger corpus), which produces more coherent token sequences and yields structurally lower cross-entropy loss independent of model quality. Within v0.5, convergence is smooth and consistent with the larger, cleaner training corpus.
