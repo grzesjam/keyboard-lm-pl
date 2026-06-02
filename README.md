@@ -62,7 +62,8 @@ Q4_0 loses ~1.5% Top-1 and ~1.7% KSR vs F32 — acceptable for a 3× size reduct
 | 65,000 | 1.4639 | 0.9142 |
 | 75,000 | 1.4527 | 0.9142 |
 | 80,000 | 1.4327 | 0.8856 |
-| 100,000 | — | **0.8542** |
+| 100,000 | — | 0.8542 |
+| 135,000 | — | **0.8017** |
 
 Note: loss values are not directly comparable between versions — v0.5 uses a retrained tokenizer (trained on a larger corpus), which produces more coherent token sequences and yields structurally lower cross-entropy loss independent of model quality. Within v0.5, convergence is smooth and consistent with the larger, cleaner training corpus.
 
