@@ -79,6 +79,21 @@ Q4_0 loses ~1.5% Top-1 and ~1.7% KSR vs F32 — acceptable for a 3× size reduct
 
 Note: loss values are not directly comparable between model versions that use different tokenizers — v0.5 uses a retrained tokenizer which changes the token boundaries. Use the accuracy/KSR metrics in the eval table for fair cross-version comparison.
 
+**Should you try to lower perplexity further?** Perplexity is a proxy, not the real goal. What actually matters for a keyboard LM is **KSR and Top-K accuracy** — the metrics that feel good to users.
+
+Corpus cleaning lowers external perplexity indirectly (the model stops wasting capacity on spam, broken sentences, and foreign text), but perplexity has a fundamental limitation: it measures whether the model predicts *statistically likely* next words, not whether it predicts *what the user actually wants*. A model can have low perplexity and still suggest "Mahd" when the user meant "naja" — because "Mahd" is a real German word that appears in the training data.
+
+The most effective levers for improving prediction quality, roughly in order of impact:
+
+| Lever | Effect |
+|---|---|
+| Corpus cleaning | Removes noise → model capacity used for real language |
+| Targeted synthetic data | Covers vocabulary gaps (e.g. "zubuchen", domain words) |
+| More training / better LR schedule | Slow and steady improvement across all metrics |
+| User correction fine-tuning | Directly fixes specific wrong predictions that bother users |
+
+The last lever — collecting real misrecognitions via the [Keyboard Collector app](#keyboard-collector-app) and fine-tuning on them — is the most targeted. It doesn't improve general language knowledge; it fixes the exact cases that frustrate actual users.
+
 ### v0.4 — Legacy
 
 v0.4 (50k and 80k checkpoints) is available in the [releases](https://github.com/jblechert/keyboard-lm-de/releases).
