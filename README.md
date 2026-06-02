@@ -94,6 +94,8 @@ The most effective levers for improving prediction quality, roughly in order of 
 
 The last lever — collecting real misrecognitions via the [Keyboard Collector app](#keyboard-collector-app) and fine-tuning on them — is the most targeted. It doesn't improve general language knowledge; it fixes the exact cases that frustrate actual users.
 
+**On corpus cleaning: less is more.** It is tempting to ban many words and patterns aggressively. Resist this. Every sentence you remove also removes context the model needs to understand when *not* to predict a word. Ban a word only when you are certain it is wrong in all contexts — not just in the context where you noticed it. A targeted ban list of 20–30 clearly wrong patterns is more effective than 500 aggressive rules that remove legitimate training signal. Observe model outputs for a while, collect specific failures, and ban only what you can confidently call noise.
+
 ### v0.4 — Legacy
 
 v0.4 (50k and 80k checkpoints) is available in the [releases](https://github.com/jblechert/keyboard-lm-de/releases).
@@ -120,14 +122,16 @@ Special autocorrect tokens: `<XBU>`, `<CHAR_A>`…`<CHAR_Z>`, `<XBC>`, `<XEC>`
 
 **Start with Q8_0.** It offers near-lossless quality and is the best way to judge if the model works well for your use case. If it feels sluggish or your battery drains noticeably faster, step down:
 
-| File | Size | Top-1 loss vs. full | KSR loss vs. full | Battery impact | Recommendation |
-|------|------|--------------------|--------------------|---------------|----------------|
-| Q8_0 | 59 MB | −1.1% | −1.1% | highest (~2×) | Try this first |
-| Q6_K | 46 MB | ~−1.2% | ~−1.3% | medium-high | Good all-round |
-| Q4_0 | 34 MB | −1.5% | −1.7% | medium | Older/slower devices |
-| Q3_K_M | 30 MB | −2.6% | −2.4% | lowest | Very old/low-end devices |
+| File | Size | Battery impact | Recommendation |
+|------|------|---------------|----------------|
+| Q8_0 | 59 MB | highest (~2×) | Try this first |
+| Q6_K | 46 MB | medium-high | Good all-round |
+| Q4_0 | 34 MB | medium | Older/slower devices |
+| Q3_K_M | 30 MB | lowest | Very old/low-end devices |
 
-Measured on 500 external German sentences. Battery impact is roughly proportional to file size — the keyboard model runs a forward pass on every keypress, so Q8 reads about twice as much data from RAM as Q3_K_M per prediction. On a phone typing 10,000 characters a day this adds up. If you notice faster battery drain, switch to Q4_0 or Q3_K_M.
+Battery impact is roughly proportional to file size — the keyboard model runs a forward pass on every keypress, so Q8 reads about twice as much data from RAM as Q3_K_M per prediction. On a phone typing 10,000 characters a day this adds up. If you notice faster battery drain, switch to Q4_0 or Q3_K_M.
+
+**Note on quantization quality:** Precise per-quantization accuracy differences could not be reliably measured with the current evaluation tooling due to a tokenizer handling mismatch between the GGUF runtime and the HuggingFace evaluation pipeline. In practice, Q8_0 is near-lossless, Q4_0 causes a small but noticeable quality reduction, and Q3_K_M is a further step down — the best way to judge is to try Q8_0 first and step down only if needed.
 
 ---
 
