@@ -65,7 +65,17 @@ Q4_0 loses ~1.5% Top-1 and ~1.7% KSR vs F32 — acceptable for a 3× size reduct
 | 100,000 | — | 0.8542 |
 | 135,000 | — | **0.8017** |
 
-Note: loss values are not directly comparable between versions — v0.5 uses a retrained tokenizer (trained on a larger corpus), which produces more coherent token sequences and yields structurally lower cross-entropy loss independent of model quality. Within v0.5, convergence is smooth and consistent with the larger, cleaner training corpus.
+**What is loss?** At each position in a sentence the model predicts the next word. Loss (cross-entropy) measures how wrong those predictions are on average — specifically, it's the negative log-probability the model assigns to the correct next word. Lower is better.
+
+- **Loss 9.6** — random guessing across a 15,000-word vocabulary (the starting point)
+- **Loss 2.0** — the model has learned basic German grammar and common words
+- **Loss 1.4** — v0.4's final level: reasonable predictions, noticeable plateau
+- **Loss 0.8** — v0.5's level: the model is confident and correct on most positions
+- **Loss 0.0** — would mean perfect memorization (undesirable; never reached in practice)
+
+Intuitively: loss 0.8 means the model effectively chooses between *e^0.8 ≈ 2.2* candidates at each word position on average. Loss 1.4 means *e^1.4 ≈ 4.1* candidates — noticeably less certain.
+
+Note: loss values are not directly comparable between model versions that use different tokenizers — v0.5 uses a retrained tokenizer which changes the token boundaries. Use the accuracy/KSR metrics in the eval table for fair cross-version comparison.
 
 ### v0.4 — Legacy
 
