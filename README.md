@@ -65,7 +65,7 @@ Q4_0 loses ~1.5% Top-1 and ~1.7% KSR vs F32 — acceptable for a 3× size reduct
 | 100,000 | — | 0.8542 |
 | 135,000 | — | **0.8017** |
 
-**What is loss?** At each position in a sentence the model predicts the next word. Loss (cross-entropy) measures how wrong those predictions are on average — specifically, it's the negative log-probability the model assigns to the correct next word. Lower is better.
+**What is loss?** At each position in a sentence the model predicts the next word. Loss (cross-entropy) measures how wrong those predictions are on average — specifically, it's the negative log-probability the model assigns to the correct next word: `loss = -ln(p_correct)`. Lower is better.
 
 - **Loss 9.6** — random guessing across a 15,000-word vocabulary (the starting point)
 - **Loss 2.0** — the model has learned basic German grammar and common words
@@ -73,7 +73,7 @@ Q4_0 loses ~1.5% Top-1 and ~1.7% KSR vs F32 — acceptable for a 3× size reduct
 - **Loss 0.8** — v0.5's level: the model is confident and correct on most positions
 - **Loss 0.0** — would mean perfect memorization (undesirable; never reached in practice)
 
-Intuitively: loss 0.8 means the model effectively chooses between *e^0.8 ≈ 2.2* candidates at each word position on average. Loss 1.4 means *e^1.4 ≈ 4.1* candidates — noticeably less certain.
+**Why Euler's number?** Loss uses the natural logarithm (ln, base *e* ≈ 2.718). This means the inverse operation is *e^loss*, which gives *perplexity* — the effective number of equally likely candidates the model is choosing from at each word position. At loss 0.8: *e^0.8 ≈ 2.2 candidates*. At loss 1.4: *e^1.4 ≈ 4.1 candidates*. At loss 9.6 (random): *e^9.6 ≈ 14,765* — roughly the full vocabulary size. Euler's number appears here because PyTorch computes cross-entropy using natural logarithm, which has the simplest mathematical properties for gradient-based optimization (its derivative is 1/x).
 
 Note: loss values are not directly comparable between model versions that use different tokenizers — v0.5 uses a retrained tokenizer which changes the token boundaries. Use the accuracy/KSR metrics in the eval table for fair cross-version comparison.
 
