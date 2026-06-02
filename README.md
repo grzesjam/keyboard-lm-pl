@@ -88,6 +88,21 @@ Special autocorrect tokens: `<XBU>`, `<CHAR_A>`…`<CHAR_Z>`, `<XBC>`, `<XEC>`
 
 ---
 
+## Which quantization should I use?
+
+**Start with Q8_0.** It offers near-lossless quality and is the best way to judge if the model works well for your use case. If it feels sluggish or your battery drains noticeably faster, step down:
+
+| File | Size | Quality | Battery impact | Recommendation |
+|------|------|---------|---------------|----------------|
+| Q8_0 | 59 MB | ≈ full | highest (~2×) | Try this first |
+| Q6_K | 46 MB | very high | medium-high | Good all-round |
+| Q4_0 | 34 MB | good | medium | Older/slower devices |
+| Q3_K_M | 30 MB | acceptable | lowest | Very old/low-end devices |
+
+Battery impact is roughly proportional to file size — the keyboard model runs a forward pass on every keypress, so Q8 reads about twice as much data from RAM as Q3_K_M per prediction. On a phone typed 10,000 characters a day this adds up. If you notice faster battery drain, switch to Q4_0 or Q3_K_M.
+
+---
+
 ## Training data — v0.5
 
 | Source | Sentences | Weight | License |
