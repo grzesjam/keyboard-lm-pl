@@ -46,7 +46,7 @@ WEB_ARTIFACTS = [
     (r"^-\s+\S",            "Zeile beginnt mit Listenpunkt (- item)"),
     (r"^[•▪▸►*|]",            "Zeile beginnt mit Aufzählungszeichen/Pipe (•▪▸►*|)"),
     (r"^\[",                 "Zeile beginnt mit [ (Blog-Tag, Kategorie-Header)"),
-    (r"(?:.*#){3}",          "≥3 Hashtags (Social-Media-Tag-Spam)"),
+    (r"(?:#.*?){3}",         "≥3 Hashtags (Social-Media-Tag-Spam)"),
     (r":\s*:",               "Doppelter Doppelpunkt (Formular-/Template-Artefakt)"),
     (r"\bN\xe4chste\s+Seite\b", "Paginierungs-Navigation (Nächste Seite)", 0),
     (r"\?[a-zäöüß]{2}",     "Fragezeichen statt ß (Kodierungsfehler: Bekannterma?en)"),
@@ -252,11 +252,25 @@ def main():
                              "exakte \xdcbereinstimmungen werden entfernt")
     args = parser.parse_args()
 
-    patterns = []
+    # Separate backreference patterns (can't be safely combined into one alternation)
+    _backref_strs = {r'\b(\w{4,})\s+\1\b', r'\b(\w{7,})\b\W{1,5}\b\1\b'}
+    _safe, _backref = [], []
     for entry in BANNED:
+        (_backref if entry[0] in _backref_strs else _safe).append(entry)
+
+    # Combine safe patterns per flag group — one search instead of ~35
+    _groups: dict[int, list[str]] = {}
+    _individuals: dict[int, list[tuple[re.Pattern, str]]] = {}
+    for entry in _safe:
         p, desc = entry[0], entry[1]
         flags = entry[2] if len(entry) > 2 else re.IGNORECASE
-        patterns.append((re.compile(p, flags), desc))
+        _groups.setdefault(flags, []).append(p)
+        _individuals.setdefault(flags, []).append((re.compile(p, flags), desc))
+    fast_matchers = [(re.compile('|'.join(f'(?:{p})' for p in grp), fl), _individuals[fl])
+                     for fl, grp in _groups.items()]
+
+    backref_matchers = [(re.compile(entry[0], entry[2] if len(entry) > 2 else re.IGNORECASE), entry[1])
+                        for entry in _backref]
 
     # Optionale Menge von Sätzen aus --high-ppl
     high_ppl_set: set[str] = set()
@@ -303,11 +317,21 @@ def main():
                     seen_hashes.add(h)
 
                 drop = False
-                for pat, desc in patterns:
-                    if pat.search(line):
-                        removed_counts[desc] += 1
-                        drop = True
-                        break
+                for combined_pat, individuals in fast_matchers:
+                    if combined_pat.search(line):
+                        for pat, desc in individuals:
+                            if pat.search(line):
+                                removed_counts[desc] += 1
+                                drop = True
+                                break
+                        if drop:
+                            break
+                if not drop:
+                    for pat, desc in backref_matchers:
+                        if pat.search(line):
+                            removed_counts[desc] += 1
+                            drop = True
+                            break
 
                 if not drop:
                     for pat, repl, desc in REPLACEMENTS:
@@ -318,7 +342,7 @@ def main():
                     line = line.strip()
                     if line:
                         line = line[0].upper() + line[1:]
-                    words = len(line.split())
+                    words = line.count(' ') + 1
                     if words < MIN_WORDS or words > MAX_WORDS:
                         n_short_removed += 1
                     else:
