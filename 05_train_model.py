@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 """
-Trains a Llama-based German keyboard language model from scratch.
+Trains a Llama-based Polish keyboard language model from scratch.
 
 Architecture (~57M Parameter):
   10 Layer × 512 Hidden Dims × 8 Attention Heads × 2048 FFN
 
 Input:
-  data/tatoeba_de.txt              Tatoeba German sentences
-  data/tokenizer/de_keyboard.model SentencePiece Tokenizer
+  data/tatoeba_pl.txt             Tatoeba Polish sentences
+  data/tokenizer/pl_keyboard.model SentencePiece Tokenizer
 
 Output:
-  models/de_keyboard/              HuggingFace Checkpoint
+  models/pl_keyboard/              HuggingFace Checkpoint
 
-v0.5-Änderungen:
-  - torch.compile() für Kernel-Fusion auf RDNA3
-  - Batch 64 statt 32 (GRAD_ACCUM 4, effektiv 256 gleich)
-  - Neue Quellen: CRE, Raumzeit, Forschergeist, MI, CCC Congress
+v1.0: Polish language model
 
 Usage:
   .venv_ml/bin/python 05_train_model.py [--steps 100000] [--resume]
@@ -54,32 +51,21 @@ def gpu_stats() -> str:
         return "GPU-Stats nicht verfügbar"
 
 
-# ── Pfade ─────────────────────────────────────────────────────────────────────
-SP_MODEL            = Path("data/tokenizer/de_keyboard.model")
-TATOEBA_TXT         = Path("data/tatoeba_de.txt")
-C4_TXT              = Path("data/c4_de.txt")
-FINEWEB2_TXT        = Path("data/fineweb2_de.txt")
+# ── Paths ──────────────────────────────────────────────────────────────────────
+SP_MODEL            = Path("data/tokenizer/pl_keyboard.model")
+TATOEBA_TXT         = Path("data/tatoeba_pl.txt")
+C4_TXT              = Path("data/c4_pl.txt")
+FINEWEB2_TXT        = Path("data/fineweb2_pl.txt")
 SYNTHETIC_GLOB      = "data/synthetic_*.txt"
-PRIVATE_TXT         = Path("data/private_de.txt")
-PARLAMENTSREVUE_TXT = Path("data/parlamentsrevue_de.txt")  # CC BY-SA 4.0
-LNP_TXT             = Path("data/lnp_de.txt")              # CC BY-NC-SA 3.0 DE
-MINKORREKT_TXT      = Path("data/minkorrekt_de.txt")        # CC BY-NC-SA 3.0
-RAUMZEIT_TXT        = Path("data/raumzeit_de.txt")          # CC BY-NC-SA 3.0 DE
-FORSCHERGEIST_TXT   = Path("data/forschergeist_de.txt")     # CC BY-NC-SA 3.0 DE
-CRE_TXT             = Path("data/cre_de.txt")               # CC BY-NC-SA 3.0 DE
-CCC_CONGRESS_TXT    = Path("data/ccc_congress_de.txt")      # CC BY 3.0
-OUTPUT_DIR          = Path("models/de_keyboard")
+PRIVATE_TXT         = Path("data/private_pl.txt")
+OUTPUT_DIR          = Path("models/pl_keyboard")
 
-# ── Sampling-Gewichte ─────────────────────────────────────────────────────────
-BASE_WEIGHT           = 1   # c4 und FineWeb2 gleichwertig (großer Hintergrundcorpus)
-TATOEBA_WEIGHT        = 3   # sauber, alltagsnah
-C4_WEIGHT             = BASE_WEIGHT
-FINEWEB2_WEIGHT       = BASE_WEIGHT
-SYNTHETIC_WEIGHT      = 3   # keyboard-spezifisch
-PRIVATE_WEIGHT        = 2   # echter Schreibstil
-PARLAMENTSREVUE_WEIGHT = 2  # gesprochenes Hochdeutsch
-LNP_WEIGHT            = 2   # gesprochenes Hochdeutsch
-PODCAST_WEIGHT        = 2   # alle weiteren Podcast-Quellen
+# ── Sampling Weights ──────────────────────────────────────────────────────────
+TATOEBA_WEIGHT        = 3   # clean, everyday language
+C4_WEIGHT             = 1   # large background corpus
+FINEWEB2_WEIGHT       = 1   # large background corpus
+SYNTHETIC_WEIGHT      = 3   # keyboard-specific
+PRIVATE_WEIGHT        = 2   # real writing style
 
 # ── Modell-Architektur (FUTO-kompatibel) ──────────────────────────────────────
 MODEL_CONFIG = dict(
@@ -167,16 +153,9 @@ def mixed_generator(no_synthetic: bool = False):
                 sources.append((line_generator(syn), SYNTHETIC_WEIGHT))
     if _has_content(PRIVATE_TXT):
         sources.append((line_generator(PRIVATE_TXT), PRIVATE_WEIGHT))
-    if _has_content(PARLAMENTSREVUE_TXT):
-        sources.append((line_generator(PARLAMENTSREVUE_TXT), PARLAMENTSREVUE_WEIGHT))
-
-    for podcast in [LNP_TXT, MINKORREKT_TXT, RAUMZEIT_TXT,
-                    FORSCHERGEIST_TXT, CRE_TXT, CCC_CONGRESS_TXT]:
-        if _has_content(podcast):
-            sources.append((line_generator(podcast), PODCAST_WEIGHT))
 
     if not sources:
-        raise FileNotFoundError("Keine Trainingsdaten gefunden.")
+        raise FileNotFoundError("No training data found.")
 
     gens, weights = zip(*sources)
     total = sum(weights)
@@ -229,9 +208,11 @@ class MilestoneCallback(TrainerCallback):
 
     def on_log(self, args, state, control, logs=None, **kwargs):
         if logs and state.global_step > 0:
-            loss = logs.get('loss', '?')
-            lr   = logs.get('learning_rate', '?')
-            print(f"  Step {state.global_step:6d} | loss={loss:.4f} lr={lr:.2e} | {gpu_stats()}",
+            loss = logs.get('loss')
+            lr   = logs.get('learning_rate')
+            loss_s = f"{loss:.4f}" if isinstance(loss, (int, float)) else "?"
+            lr_s   = f"{lr:.2e}"   if isinstance(lr,   (int, float)) else "?"
+            print(f"  Step {state.global_step:6d} | loss={loss_s} lr={lr_s} | {gpu_stats()}",
                   flush=True)
 
     def on_step_end(self, args, state, control, model=None, **kwargs):
@@ -265,7 +246,7 @@ def main():
     parser.add_argument("--no-synthetic", action="store_true")
     parser.add_argument("--steps",  type=int, default=200_000)
     parser.add_argument("--milestones", default=",".join(str(s) for s in range(50_000, 200_001, 10_000)))
-    parser.add_argument("--version", default="v0.5")
+    parser.add_argument("--version", default="v1.0")
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
 
@@ -335,14 +316,10 @@ def main():
         callbacks=[milestone_cb],
     )
 
-    podcast_sources = [p.stem for p in [LNP_TXT, MINKORREKT_TXT, RAUMZEIT_TXT,
-                       FORSCHERGEIST_TXT, CRE_TXT, CCC_CONGRESS_TXT] if p.exists()]
-
-    print(f"\nStarte Training v0.5 für {args.steps:,} Schritte ...")
-    print(f"  Effektive Batchgröße: {BATCH_SIZE * GRAD_ACCUM}  (batch={BATCH_SIZE}, accum={GRAD_ACCUM})")
-    print(f"  Kontext:              {CONTEXT_LEN} Tokens")
-    print(f"  Podcasts aktiv:       {', '.join(podcast_sources) or 'keine'}")
-    print(f"  Snapshots bei:        {sorted(milestones)}")
+    print(f"\nStarting training {args.version} for {args.steps:,} steps ...")
+    print(f"  Effective batch size: {BATCH_SIZE * GRAD_ACCUM}  (batch={BATCH_SIZE}, accum={GRAD_ACCUM})")
+    print(f"  Context:              {CONTEXT_LEN} tokens")
+    print(f"  Snapshots at:         {sorted(milestones)}")
 
     # Background-Thread: meldet alle 20s den Status während der Compile-Phase
     _compile_done = threading.Event()
@@ -365,3 +342,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

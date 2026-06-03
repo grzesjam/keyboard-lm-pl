@@ -8,7 +8,7 @@ keyboard-relevant latency (ms per prediction).
 
 Usage:
   .venv_ml/bin/python 17_benchmark_device.py
-  .venv_ml/bin/python 17_benchmark_device.py --model data/de_keyboard.gguf
+  .venv_ml/bin/python 17_benchmark_device.py --model data/pl_keyboard.gguf
   .venv_ml/bin/python 17_benchmark_device.py --device <serial> --runs 20
   .venv_ml/bin/python 17_benchmark_device.py --pp 64   # longer context
 """

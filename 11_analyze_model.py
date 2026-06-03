@@ -23,7 +23,7 @@ Modellanalyse: Perplexity, Vorhersagehäufigkeit und Top-K-Accuracy
 Usage:
   .venv_ml/bin/python 11_analyze_model.py [--samples 2000] [--contexts 500]
   .venv_ml/bin/python 11_analyze_model.py --skip-perplexity --skip-frequency
-  .venv_ml/bin/python 11_analyze_model.py --gguf data/de_keyboard_v0.5_5k-Q8_0.gguf
+  .venv_ml/bin/python 11_analyze_model.py --gguf data/pl_keyboard_v1.0_5k-Q8_0.gguf
 """
 
 import argparse
@@ -35,12 +35,12 @@ from pathlib import Path
 import torch
 from transformers import LlamaForCausalLM, LlamaTokenizer
 
-MODEL_DIR  = Path("models/de_keyboard")
-SP_MODEL   = Path("data/tokenizer/de_keyboard.model")
+MODEL_DIR  = Path("models/pl_keyboard")
+SP_MODEL   = Path("data/tokenizer/pl_keyboard.model")
 
 SOURCES = [
-    Path("data/tatoeba_de.txt"),
-    Path("data/c4_de.txt"),
+    Path("data/tatoeba_pl.txt"),
+    Path("data/c4_pl.txt"),
     *sorted(Path("data").glob("synthetic_*.txt")),
 ]
 
@@ -500,7 +500,7 @@ def main():
                              "(default: data/eval_held_out.txt, 'none' = Trainingsdaten)")
     parser.add_argument("--gguf", default=None, metavar="FILE",
                         help="GGUF-Datei laden statt HuggingFace-Modell "
-                             "(z.B. data/de_keyboard_v0.5_5k-Q8_0.gguf)")
+                             "(z.B. data/pl_keyboard_v1.0_5k-Q8_0.gguf)")
     args = parser.parse_args()
 
     global DEVICE

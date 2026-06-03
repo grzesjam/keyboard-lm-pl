@@ -18,7 +18,7 @@ from pathlib import Path
 
 from datasets import load_dataset
 
-OUT_FILE = Path("data/wikipedia_de.txt")
+OUT_FILE = Path("data/wikipedia_pl.txt")
 
 
 def split_sentences(text: str) -> list[str]:

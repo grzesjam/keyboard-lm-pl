@@ -95,112 +95,57 @@ WEB_ARTIFACTS = [
      "Nahes Doppelwort mit Trennzeichen (Keyword-Spam: esszimmer - esszimmer)"),
 ]
 
-# Deutsch-spezifische Filter: falsche Schreibweisen, DE-E-Commerce, DE-Adressen
-LANG_DE = [
-    # Überrepräsentierte Einzelwörter
-    (r"\bmahd\b",       "Mahd (f\xe4lschlicherweise h\xe4ufig vorhergesagt)"),
+# Polish-specific filters
+LANG_PL = [
+    # Polish address patterns
+    (r",\s*\d{2}-\d{3}\b",
+     "Address (comma before postal code)"),
+    (r"\b(?:ulica|ul\.|aleja|al\.|plac|pl\.|osiedle|os\.)\s+\w+\s+\d+\b",
+     "Address (street name + number)"),
 
-    # Alte deutsche Rechtschreibung / Scanfehler
-    (r"\bae(?:hn|uss|uss)\w*", "Alte Schreibweise ae- (\xc4hnliche, \xc4u\xdferst …)"),
-    (r"\bue(?:ber|brig|bel)\w*", "Alte Schreibweise ue- (\xdcber, \xdcbrig …)"),
+    # E-commerce spam
+    (r"\bkoszt\w*\s+dostawy\b",  "Shipping cost (E-commerce)"),
+    (r"\bdarmowa dostawa\b",     "Free shipping (E-commerce)"),
+    (r"\bdo koszyka\b",          "Add to cart (E-commerce)"),
+    (r"\bzamów\w+\s+już\b",     "Order now (E-commerce)"),
 
-    # SEO-Spam: Umlaut gefolgt von Großbuchstabe — nie korrekte deutsche Grammatik
-    (r"[\xe4\xf6\xfc\xdf][A-Z\xc4\xd6\xdc]",
-     "Umlaut gefolgt von Gro\xdfbuchstabe (SEO-Spam)", 0),
+    # E-mail closings
+    (r"\bZ poważaniem\b",
+     "E-mail closing (Z poważaniem)"),
+    (r"\bPozdrawiam\b",
+     "E-mail closing (Pozdrawiam)"),
 
-    # Ausgeschriebene deutsche Datumsangaben
-    (r"\b\d{1,2}\.\s*(?:Januar|Februar|M\xe4rz|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\s+\d{4}\b",
-     "Ausgeschriebenes Datum (dd. Monat yyyy)"),
+    # Numbers with Polish currency
+    (r"\b\d+\s*zł\b",         "Price listing (zł)"),
+    (r"\b\d+,\d{2}\s*zł\b",  "Price listing (xx,xx zł)"),
 
-    # Adressen
-    (r",\s*\d{5}\b",
-     "Adresse (Komma vor Postleitzahl)"),
-    (r"\b(?:Stra\xdfe|Gasse|Weg|Allee|Platz|Ring|Damm|Chaussee)\s+\d+\b",
-     "Adresse (Stra\xdfenname + Hausnummer)"),
+    # Casino/gambling SEO
+    (r"\b(?:betclic|totolotek|totalizator|sts|fortuna|superbet)\b",
+     "Gambling provider (betclic/sts/fortuna …)"),
 
-    # E-Commerce-Spam
-    (r"\bVersandkosten\b",  "Versandkosten (Shop-Listing)"),
-    (r"\bMwSt\.?\b",        "MwSt (Shop-Listing)"),
-    (r"\bWarenkorb\b",      "Warenkorb (Shop-Listing)"),
-    (r"\bzzgl\.\b",         "zzgl. (Preis-Listing)"),
+    # Adult SEO
+    (r"porn", "Pornographic content"),
 
-    # Amazon / Buchhandel-Spam
-    (r"\bGebundene Ausgabe\b",  "Amazon-Format (Gebundene Ausgabe)"),
-    (r"\bBestseller-Rang\b",    "Amazon-Rang (Bestseller-Rang)"),
-    (r"\bFremdsprachige B\xfccher\b", "Amazon-Kategorie (Fremdsprachige B\xfccher)"),
-    (r"\bSiehe Top 100\b",      "Amazon-Rang-Link (Siehe Top 100)"),
-    (r"\bEUR\s+\d",             "Preis-Listing (EUR 12,34)"),
-    (r"\d+,-\s*€",        "Preis-Listing (149,- € — Komma-Strich-Notation)"),
-    (r"Zur\xfcck\s*Weiter",     "Amazon-Navigation (Zur\xfcckWeiter)"),
-    (r"\bAngebote\s+ab\b",      "Amazon-Preis (Angebote ab EUR)"),
+    # Blog metadata
+    (r"\bkomentarze\b",      "Blog metadata (komentarze)"),
+    (r"\bnapisał\w*\b",      "Blog author line (napisał/a)"),
+    (r"\bkliknij\s+tutaj\b", "Navigation CTA (kliknij tutaj)"),
+    (r"^\s*Tagi\s*:",        "Blog tags (Tagi:)"),
 
-    # Medien-Produktlistings
-    (r"\((?:CD|DVD|Blu-?[Rr]ay|Buch|H\xf6rbuch|H\xf6rbuch MP3|MP3|EP|LP|VHS|Vinyl|Book|Film|Movie|Album|Novel|Series|Comic)\)\s*$",
-     "Medien-Produktlisting (Buch/CD/DVD/Book/Film am Zeilenende)"),
-    (r"\b(?:Doppel|Triple|Single|Einzel)-?(?:CD|DVD|LP)\b",
-     "Medien-Produktformat (Doppel-CD etc.)"),
+    # Movie/TV credits
+    (r"^\s*(?:Reżyseria|Scenariusz|Zdjęcia|Muzyka|Montaż|Produkcja)\s*:",
+     "Movie/TV credits"),
 
-    # Hotel-/Reise-Spam
-    (r"\bNo:\s*\d",  "Englische Hausnummer (No:9 — Hotel-/Adress-Listing)"),
-    (r"\b(?:un|ver|be|ge|ent|emp|zer)\s*$",
-     "Abgeschnittenes Pr\xe4fix am Zeilenende (un/ver/ge/be/ent — Truncation)", 0),
-
-    # Blog-Metadaten
-    (r"keine Kommentare",    "Blog-Metadaten (keine Kommentare)"),
-    (r"geschrieben von\b",   "Blog-Autorenzeile (geschrieben von ...)"),
-    (r"\bklicken?\s+(?:Sie\s+)?(?:hier|auf|bitte)\b|\bhier\s+klicken\b",
-     "Navigations-CTA (klicken Sie hier, hier klicken, klick auf …)"),
-    (r"^\s*Bild\w*\s*\w*:",  "Bildunterschrift (Bild oben:, Bild links: ...)"),
-    (r"^\s*Tags?\s*(?:für\s+diesen\s+Artikel\s*)?:", "Blog-Tags (Tags: keyword, keyword …)"),
-    (r"^\s*(?:Regie|Drehbuch|Darsteller|Produktion|Kamera|Schnitt|Musik)\s*:",
-     "Film-/TV-Credits (Regie:, Darsteller:, Drehbuch: …)"),
-    (r"^\s*Flüge\s+von\s+\w+\s+nach\s+\w+",
-     "Reise-Suchergebnis (Flüge von X nach Y)"),
-
-    # Produktkategorien: synthetisch abgedeckt, in c4 überwiegend E-Commerce-Spam
-    (r"\b(?:Nagel|Nägel|Schraube|Schrauben|Dübel|Akkuschrauber|Bohrmaschine|Sägeblatt|Winkelschleifer|Unterlegscheibe)\b",
-     "Heimwerker-Produkt (Nägel/Schrauben/Dübel — synthetisch abgedeckt)"),
-    (r"\b(?:Badewanne|Duschkabine|Waschtisch|Sanitär|Duschwanne|Badmöbel|Badarmatur)\b",
-     "Bad-Produkt (Badewanne/Duschkabine — synthetisch abgedeckt)"),
-    (r"\b(?:Sideboard|Schrankwand|Wohnwand|Polsterecke|Kommode|Nachttisch|Kleiderschrank|Wohnzimmerschrank)\b",
-     "Möbel-Produkt (Sideboard/Kommode — synthetisch abgedeckt)"),
-    (r"\b(?:Felge|Felgen|Stoßstange|Motoröl|Bremsscheibe|Spoiler|Auspuff|Tuning|Kotflügel)\b",
-     "Auto-Zubehör (Felgen/Bremsscheibe — synthetisch abgedeckt)"),
-    (r"\b(?:Damenjacke|Herrenhose|Damenbluse|Herrenhemd|Übergröße|Konfektionsgröße|Damenmantel|Herrenjacke)\b",
-     "Kleidungs-Listing (Damenjacke/Herrenhose — synthetisch abgedeckt)"),
-
-    # Glücksspiel-SEO-Spam: "Beste Spielothek in [Stadt] finden"
-    (r"\bSpielothek\b", "Glücksspiel-SEO-Spam (Spielothek in ... finden)"),
-    (r"\b(?:bet365|betway|bwin|tipico|betsson|unibet|pokerstars|888casino)\b",
-     "Glücksspiel-Anbieter (bet365/bwin/tipico …)"),
-    (r"\b(?:online|internet)\s+casinos?\b",
-     "Casino-SEO-Injektion (online/internet casino(s) in normalem Satz)"),
-
-    # Adult-Content-SEO (Escort-Seiten-Spam in FineWeb2)
-    (r"\bsexy\s+frau\b|\bnudisten\b|\bdominante\s+massagen\b"
-     r"|\bFicken\b|\bMilf\b|\bfürsex\b|\bBipaar\b|\bprostituiert\w*\b",
-     "Adult-SEO-Spam (sexy frau / nudisten / Ficken / Milf …)"),
-    (r"porn",                "Pornografische URL/Begriff (porn als Substring)"),
-
-    # E-Mail-Abschlussformel
-    (r"\bMit freundlichen Gr\xfc\xdfen\b",
-     "E-Mail-Abschlussformel (Mit freundlichen Grüßen)"),
-
-    # Kommentarbox-UI
-    (r"\d+\s*Zeichen\s*(?:übrig|verbleibend)", "Zeichenzähler (Web-Kommentarbox-UI)"),
-    (r"\bSchreiben Sie.*Kommentar\b", "Kommentarbox-Aufforderung"),
-    (r"\bmehr\s+lesen\b|\bweiterlesen\b|[.!?]\s+Mehr\s*$",
-     "Web-Artefakt (mehr lesen / weiterlesen / ». Mehr« — Teaserlink)"),
-
-    # E-Commerce-Header
-    (r"\bBestellen oder Ausleihen\b", "E-Commerce-Header (Kaufen, Bestellen oder Ausleihen)"),
+    # Comment box UI
+    (r"\bDodaj komentarz\b", "Comment box prompt"),
+    (r"\bczytaj\s+więcej\b", "Read more (web artifact)"),
 ]
 
-# Nicht-deutsche Schriften und Zeichen (Sprach-Ausschlüsse)
+# Non-Polish scripts and characters (language exclusions)
 LANG_EXCLUDE = [
-    # Nicht-deutsche europäische Sonderzeichen: Estnisch/Finnisch/Polnisch etc.
-    (r"[õőűčšžāēīūţşąęśźżłńçğı]",
-     "Nicht-dt. EU-Buchstabe (\xf5čšžāłçğı — Estnisch/Polnisch/Lettisch/T\xfcrkisch …)", 0),
+    # Non-Polish European special characters
+    (r"[õőűčšžāēīūţşçğı]",
+     "Non-PL EU letter (\xf5čšžāłçğı — Estonian/Latvian/Turkish …)", 0),
     # Thorn: nur Isländisch/Altenglisch, nie Deutsch (auch: falsch konvertiertes ß)
     (r"[þÞ]",
      "Thorn (Isländisch/Altenglisch — kein deutsches Zeichen)", 0),
@@ -225,7 +170,7 @@ SPEECH_ARTIFACTS = [
     (r"Ă[^\x00-\x7f]",                               "Unreparabler Mojibake (Ă + Sonderzeichen)"),
 ]
 
-BANNED = WEB_ARTIFACTS + LANG_DE + LANG_EXCLUDE + SPEECH_ARTIFACTS
+BANNED = WEB_ARTIFACTS + LANG_PL + LANG_EXCLUDE + SPEECH_ARTIFACTS
 
 # ── Ersetzungen ───────────────────────────────────────────────────────────────
 # Jeder Eintrag: (compiled_pattern, replacement, beschreibung)
@@ -242,47 +187,30 @@ def _try_encode(s: str, enc: str) -> bool:
 
 def _build_replacements():
     pairs = [
-        # Schweizer Schreibweise ohne ß → Standard-Deutsch
-        (r"\bgrosse(n|r|s|m)?\b", lambda m: "gro\xdfe" + (m.group(1) or ""),          "grosse→gro\xdfe"),
-        (r"\bGrosse(n|r|s|m)?\b", lambda m: "Gro\xdfe" + (m.group(1) or ""),          "Grosse→Gro\xdfe"),
-        # Mojibake: doppelt falsch dekodierte Umlaute reparieren
-        ("\xc3\xa4", "\xe4", "Mojibake \xc3\xa4 -> \xe4"),
-        ("\xc3\xb6", "\xf6", "Mojibake \xc3\xb6 -> \xf6"),
-        ("\xc3\xbc", "\xfc", "Mojibake \xc3\xbc -> \xfc"),
-        ("\xc3", "\xc4", "Mojibake \xc3 -> \xc4"),
-        ("\xc3", "\xd6", "Mojibake \xc3 -> \xd6"),
-        ("\xc3", "\xdc", "Mojibake \xc3 -> \xdc"),
-        ("\xc3", "\xdf", "Mojibake \xc3 -> \xdf"),
-        # C1-Steuerzeichen (U+0080-U+009F): Windows-1252-Artefakte
-        ("[\x80-\x9f]", "", "C1-Steuerzeichen entfernen (Windows-1252-Artefakte)"),
-        # Mojibake Typ 2: UTF-8-Bytes als Windows-1252 gelesen (ae-Euro-Sequenzen)
-        ("\xe2\x80\x9e", "",  "Mojibake ae-Euro-z -> Anf.-Zeichen (wird gestrichen)"),
-        ("\xe2\x80\x9c", "",  "Mojibake ae-Euro-oe -> Anf.-Zeichen (wird gestrichen)"),
-        ("\xe2\x80\x93", "-",  "Mojibake ae-Euro-lq -> Gedankenstrich"),
-        ("\xe2\x80\x91", "'", "Mojibake ae-Euro-rq -> Apostroph"),
-        ("\xe2\x80\x99", "",  "Mojibake ae-Euro-tm -> Anf.-Zeichen (wird gestrichen)"),
-        # Anführungszeichen aller Art entfernen
-        (r'["""„\xab\xbb]', "",  'Anf\xfchrungszeichen entfernen ("„"\xbb\xab)'),
-        # Zitatmarker und Pfeilzeichen entfernen: > Zitat, <Verweis>
-        (r'[<>]', '', 'Spitze Klammern (Zitatmarker, Pfeil)'),
-        # Fehlende Leerzeichen nach Satzzeichen reparieren
-        # Weiches Trennzeichen (U+00AD): Formatierungsartefakt aus Web-Quellen
-        ("\xad", "", "Weiches Trennzeichen (U+00AD) entfernen"),
-        # Punkt: Prof.Dr. -> Prof. Dr., e.V. -> e. V., Satz.Satz -> Satz. Satz
-        (r'([a-z\xe4\xf6\xfc\xdf])\.([A-Z\xc4\xd6\xdc])', r'\1. \2',
-         'Fehlender Abstand nach Punkt (Prof.Dr. -> Prof. Dr.)'),
-        # Ausrufe-/Fragezeichen: Toll!Super -> Toll! Super
-        (r'([a-z\xe4\xf6\xfc\xdf])([!?])([A-Z\xc4\xd6\xdc])', r'\1\2 \3',
-         'Fehlender Abstand nach ! oder ? (Toll!Super -> Toll! Super)'),
-        # Semikolon: wort;Wort -> wort; Wort
-        (r'([a-z\xe4\xf6\xfc\xdf]);([A-Za-z\xc4\xd6\xdc\xe4\xf6\xfc])', r'\1; \2',
-         'Fehlender Abstand nach Semikolon'),
-        # Gesprochene Füllwörter entfernen (Whisper-Artefakte aus Podcasts)
-        (r'(?i)\s*\b(?:ähm+|äh|öh|hmm?|mhm|ehm)\b\s*', ' ',
-         'Füllwort ersetzen (ähm/äh → leer)'),
-        # UTF-8 Bytes als ISO-8859-16 (Rumänisch) oder CP1250 falsch dekodiert
-        # Erkennbar an Ă (U+0102) gefolgt von einem nicht-ASCII Zeichen
-        # Reparatur: .encode(encoding).decode('utf-8')
+        # C1 control chars (U+0080-U+009F): Windows-1252 artifacts
+        ("[\x80-\x9f]", "", "C1 control chars (Windows-1252 artifacts)"),
+        # Mojibake: UTF-8 bytes read as Windows-1252
+        ("\xe2\x80\x9e", "",  "Mojibake double low quote"),
+        ("\xe2\x80\x9c", "",  "Mojibake left double quote"),
+        ("\xe2\x80\x93", "-", "Mojibake en dash"),
+        ("\xe2\x80\x91", "'", "Mojibake apostrophe"),
+        ("\xe2\x80\x99", "",  "Mojibake right single quote"),
+        # Remove all types of quotation marks
+        (r'["""„\xab\xbb]', "",  'Remove quotation marks'),
+        # Remove angle brackets (citation markers)
+        (r'[<>]', '', 'Angle brackets (citation markers)'),
+        # Soft hyphen (U+00AD): formatting artifact
+        ("\xad", "", "Soft hyphen (U+00AD) remove"),
+        # Missing spaces after periods
+        (r'([a-ząćęłńóśźż])\.([A-ZĄĆĘŁŃÓŚŹŻ])', r'\1. \2',
+         'Missing space after period'),
+        # Missing spaces after ! or ?
+        (r'([a-ząćęłńóśźż])([!?])([A-ZĄĆĘŁŃÓŚŹŻ])', r'\1\2 \3',
+         'Missing space after ! or ?'),
+        # Missing space after semicolon
+        (r'([a-ząćęłńóśźż]);([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż])', r'\1; \2',
+         'Missing space after semicolon'),
+        # ISO-8859-16/CP1250 Mojibake repair
         (r'Ă[^\x00-\x7f]',
          lambda m: next(
              (m.group().encode(enc).decode('utf-8')
@@ -290,9 +218,9 @@ def _build_replacements():
               if _try_encode(m.group(), enc)),
              m.group()
          ),
-         'ISO-8859-16/CP1250 Mojibake (Ă + Sonderzeichen → Umlaut)'),
-        (r'  +', ' ', 'Doppeltes Leerzeichen'),
-        (r',\s*,', ',', 'Doppeltes Komma nach Füllwort'),
+         'ISO-8859-16/CP1250 Mojibake'),
+        (r'  +', ' ', 'Double space'),
+        (r',\s*,', ',', 'Double comma'),
     ]
     return [(re.compile(p, re.UNICODE), repl, desc) for p, repl, desc in pairs]
 
@@ -304,15 +232,10 @@ MAX_WORDS = 60  # Podcast-Run-ons: Sätze über 60 Wörter raus
 # ── Quelldateien ──────────────────────────────────────────────────────────────
 
 SOURCES = [
-    Path("data/tatoeba_de.txt"),
-    Path("data/c4_de.txt"),
+    Path("data/tatoeba_pl.txt"),
+    Path("data/c4_pl.txt"),
+    Path("data/fineweb2_pl.txt"),
     *sorted(Path("data").glob("synthetic_*.txt")),
-    Path("data/parlamentsrevue_de.txt"),
-    Path("data/lnp_de.txt"),
-    Path("data/minkorrekt_de.txt"),
-    Path("data/raumzeit_de.txt"),
-    Path("data/forschergeist_de.txt"),
-    Path("data/cre_de.txt"),
 ]
 
 

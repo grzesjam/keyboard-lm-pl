@@ -30,515 +30,496 @@ DATA_DIR = Path("data")
 # system_zusatz ergänzt den allgemeinen System-Prompt für das Thema
 
 TOPICS = {
-    "mittelalter": {
-        "name": "Mittelalter & Geschichte",
+    "historia": {
+        "name": "Historia & Średniowiecze",
         "beschreibung": (
-            "Sätze rund ums Mittelalter und mittelalterliche Geschichte — "
-            "so wie man sie in einem Gespräch, Chat oder beim Googeln tippt. "
-            "Nicht Wikipedia-Stil, sondern wie echte Menschen darüber sprechen."
+            "Zdania o historii, średniowieczu, zamkach, wydarzeniach historycznych — "
+            "tak jak ludzie piszą w rozmowach, na czacie czy w Googlach. "
+            "Nie styl encyklopedyczny, tylko naturalna rozmowa."
         ),
         "beispiele": [
-            "Weißt du noch, was im Mittelalter mit Ketzern passiert ist?",
-            "Die Burg Hohenzollern ist aus dem Mittelalter, oder?",
-            "Ich finde das Mittelalter total faszinierend.",
-            "Haben die Ritter im Mittelalter wirklich so gelebt?",
-            "Das erinnert mich irgendwie ans Mittelalter.",
-            "Wir waren gestern auf dem Mittelaltermarkt, war super!",
-            "Karl der Große gilt ja als Vater Europas.",
-            "Die Pest hat im Mittelalter Millionen Menschen getötet.",
+            "Byliśmy wczoraj na zamku w Malborku, było niesamowicie.",
+            "Kiedy właściwie upadło powstanie warszawskie?",
+            "Historia Polski jest strasznie skomplikowana.",
+            "Mieszko I przyjął chrzest w 966 roku, prawda?",
+            "Moja babcia opowiadała o wojnie, straszne rzeczy.",
+            "Kopernik był Polakiem, nie Niemcem!",
+            "W średniowieczu ludzie naprawdę wierzyli w smoki?",
+            "Jan III Sobieski uratował Europę pod Wiedniem.",
         ],
     },
-    "geschichte": {
-        "name": "Deutsche Geschichte",
+    "medycyna": {
+        "name": "Medycyna & Zdrowie",
         "beschreibung": (
-            "Sätze zur deutschen Geschichte — Kaiserreich, Weimar, NS-Zeit, DDR, "
-            "Wiedervereinigung, BRD. Alltägliche Gesprächskontexte: Schule, Nachrichten, "
-            "Dokumentationen, Familiengeschichten, Museumsbesuche."
+            "Zdania o zdrowiu, wizytach u lekarza, diagnozach, leczeniu — "
+            "tak jak mówi się na co dzień. Rozmowy ze znajomymi, rodziną, "
+            "umawianie wizyt, opisywanie objawów."
         ),
         "beispiele": [
-            "Habt ihr in Geschichte gerade die Weimarer Republik?",
-            "Der Mauerfall war echt ein historischer Moment.",
-            "Mein Opa hat noch den Zweiten Weltkrieg erlebt.",
-            "Das Bundestag-Gebäude hat so eine bewegte Geschichte.",
-            "Ich finde die Nachkriegszeit total spannend.",
-            "Die Teilung Deutschlands hat so viele Familien zerrissen.",
-            "Bismarck hat das Deutsche Reich ja eigentlich erst gegründet.",
-            "Die Novemberrevolution 1918 hab ich nie richtig verstanden.",
+            "Muszę iść do dermatologa, bo mam wysypkę.",
+            "Morfologia wyszła całkiem nieźle, na szczęście.",
+            "Lekarz zapisał mi antybiotyk na zapalenie oskrzeli.",
+            "Mam nadciśnienie, muszę brać leki codziennie.",
+            "Znacie dobrego kardiologa w Warszawie?",
+            "Rezonans magnetyczny nic nie wykazał, dzięki Bogu.",
+            "Biorę metforminę na cukrzycę od dwóch lat.",
+            "Rehabilitacja po operacji kolana bardzo pomaga.",
         ],
     },
-    "medizin": {
-        "name": "Medizin & Gesundheit",
+    "technologia": {
+        "name": "Komputery & Technologia",
         "beschreibung": (
-            "Sätze zu Gesundheitsthemen, Arztbesuchen, Diagnosen, Behandlungen — "
-            "so wie man sie im Alltag tippt. Gespräche mit Freunden, Familie, "
-            "Terminvereinbarungen, Erklärerungen, Fragen."
+            "Zdania o komputerach, software, internecie, AI, grach — "
+            "codzienne rozmowy o technice, pytania, problemy. "
+            "Nie tylko fachowy żargon, ale jak zwykli ludzie mówią o technologii."
         ),
         "beispiele": [
-            "Ich muss heute zum Orthopäden wegen meinem Rücken.",
-            "Die Entzündungswerte waren leider erhöht.",
-            "Mein Hausarzt hat mich zum Kardiologen überwiesen.",
-            "Bluthochdruck ist in unserer Familie leider genetisch.",
-            "Hast du eine gute Empfehlung für einen Neurologen?",
-            "Das MRT hat nichts Schlimmes gezeigt, Gott sei Dank.",
-            "Ich nehme jetzt Metformin gegen den Diabetes.",
-            "Die Physiotherapie hilft echt, mein Knie wird besser.",
+            "Mój laptop znowu się zawiesił, nie mam pojęcia czemu.",
+            "Próbowałeś już nowego ChatGPT? Podobno jest lepszy.",
+            "Blockchain dalej jest dla mnie czarną magią.",
+            "Linux jest za trudny dla przeciętnego użytkownika.",
+            "Jaką kartę graficzną polecasz do gier?",
+            "Nie ufam cloud synchronizacji, boję się o prywatność.",
+            "Nowy iPhone ma ponoć lepszy procesor.",
+            "Uczę się Pythona i całkiem mi to wchodzi.",
         ],
     },
-    "computer": {
-        "name": "Computer & Technologie",
+    "natura": {
+        "name": "Natura & Środowisko",
         "beschreibung": (
-            "Sätze rund um Computer, Software, Internet, KI, Gaming — "
-            "Alltagsgespräche über Technik, Fragen, Empfehlungen, Probleme. "
-            "Nicht nur Fachjargon, auch wie Normalnutzer über Technik sprechen."
+            "Zdania o naturze, zwierzętach, roślinach, ochronie środowiska, "
+            "klimacie — codzienne rozmowy: na spacerze, w newsach, "
+            "o zwierzętach domowych, ogrodzie, pogodzie."
         ),
         "beispiele": [
-            "Mein Laptop ist schon wieder abgestürzt.",
-            "Hast du das neue ChatGPT-Update schon ausprobiert?",
-            "Ich versteh das Konzept hinter Blockchain immer noch nicht.",
-            "Linux ist für mich persönlich einfach zu kompliziert.",
-            "Welche GPU würdest du für Gaming empfehlen?",
-            "Die Cloud-Synchronisation macht mir Sorgen wegen Datenschutz.",
-            "Das neue iPhone hat angeblich einen besseren Chip.",
-            "Ich lern gerade Python, macht echt Spaß.",
+            "Widzieliśmy dzisiaj bociana na łące, piękny widok!",
+            "Ten dąb w naszym ogrodzie ma chyba sto lat.",
+            "Populacje pszczół dramatycznie maleją, to straszne.",
+            "Oglądałeś film o rafach koralowych?",
+            "Kompostowanie wcale nie jest takie trudne.",
+            "Te fale upałów są coraz gorsze przez zmiany klimatu.",
+            "W parku narodowym nie wolno dotykać roślin.",
+            "To lato jest zdecydowanie za suche dla rolnictwa.",
         ],
     },
-    "natur": {
-        "name": "Natur & Umwelt",
+    "polityka": {
+        "name": "Polityka & Społeczeństwo",
         "beschreibung": (
-            "Sätze zu Natur, Tieren, Pflanzen, Umweltschutz, Klimawandel — "
-            "wie man im Alltag darüber spricht: beim Wandern, in Nachrichten, "
-            "Gesprächen über Haustiere, den Garten, das Wetter."
+            "Zdania o polityce, wyborach, partiach, debatach społecznych — "
+            "codzienne rozmowy w rodzinie, ze znajomymi. Żadnej propagandy, "
+            "normalny dyskurs."
         ),
         "beispiele": [
-            "Wir haben heute einen Rotmilan gesehen beim Wandern!",
-            "Die Eiche in unserem Garten ist wirklich uralt.",
-            "Die Schmetterlingspopulationen gehen dramatisch zurück.",
-            "Hast du die Doku über die Korallenriffe gesehen?",
-            "Ich finde Kompostieren gar nicht so schwer wie gedacht.",
-            "Die Hitzeperioden werden immer schlimmer wegen Klimawandel.",
-            "Im Nationalpark darf man das Unterholz nicht berühren.",
-            "Dieser Sommer ist viel zu trocken für die Landwirtschaft.",
+            "Nie ogarniam tego rządu, ciągle się kłócą.",
+            "Frekwencja w wyborach była zaskakująco wysoka.",
+            "Widziałeś przemówienie prezydenta wczoraj?",
+            "System emerytalny musi być pilnie reformowany.",
+            "Podoba mi się nowy program mieszkaniowy.",
+            "Unia Europejska robi czasem naprawdę dobre rzeczy.",
+            "Polityka klimatyczna jest ważna, ale wykonanie kuleje.",
+            "Nowy prezydent miasta ma ciekawe pomysły.",
         ],
     },
-    "politik": {
-        "name": "Politik & Gesellschaft",
+    "muzyka": {
+        "name": "Muzyka & Koncerty",
         "beschreibung": (
-            "Sätze zu aktuellen politischen Themen, gesellschaftlichen Debatten, "
-            "Wahlen, Parteien — wie man im Alltag, in Familiengesprächen oder "
-            "mit Freunden darüber spricht. Keine Propaganda, normaler Diskurs."
+            "Zdania o muzyce, koncertach, festiwalach, zespołach, "
+            "instrumentach — jak fani piszą o muzyce na co dzień. "
+            "Rekomendacje, wrażenia z koncertów, dyskusje o albumach."
         ),
         "beispiele": [
-            "Ich versteh die Ampelkoalition manchmal wirklich nicht.",
-            "Die Wahlbeteiligung war diesmal überraschend hoch.",
-            "Hast du die Bundeskanzler-Rede gestern gesehen?",
-            "Das Rentensystem muss dringend reformiert werden.",
-            "Ich finde das neue Einwanderungsgesetz schwierig.",
-            "Die EU macht manchmal echt sinnvolle Sachen.",
-            "Klimapolitik ist wichtig, aber die Umsetzung lahmt.",
-            "Der neue Bürgermeister hat interessante Ideen.",
-        ],
-    },
-    "musik": {
-        "name": "Musik & Konzerte",
-        "beschreibung": (
-            "Sätze zu Musik aller Genres, Konzerten, Festivals, Bands, Instrumenten — "
-            "wie Musikfans im Alltag darüber schreiben. Empfehlungen, Konzerterlebnisse, "
-            "Diskussionen über Alben, Künstler, Live-Auftritte."
-        ),
-        "beispiele": [
-            "Das Konzert gestern Abend war absolut legendär.",
-            "Rammstein live ist einfach ein anderes Erlebnis.",
-            "Ich lern gerade Klavierspielen, bin totaler Anfänger.",
-            "Das neue Album von Cro ist leider eher enttäuschend.",
-            "Das Jazzfestival in Montreux steht auf meiner Bucketlist.",
-            "Kammermusik klingt immer so elitär, aber ich find's schön.",
-            "Habt ihr Tickets für das Open Air schon?",
-            "Die Berliner Philharmoniker sind halt unschlagbar.",
+            "Koncert wczoraj był absolutnie legendarny!",
+            "Kult na żywo to zupełnie inne przeżycie.",
+            "Uczę się grać na pianinie, jestem totalnym początku.",
+            "Nowa płyta Dawida Podsiadło jest świetna.",
+            "Festiwal w Opolu mam na liście marzeń.",
+            "Muzyka klasyczna brzmi elitarnie ale pięknie.",
+            "Macie już bilety na Open'er?",
+            "Filharmonia Narodowa jest po prostu niezastąpiona.",
         ],
     },
     "sport": {
-        "name": "Sport & Bewegung",
+        "name": "Sport & Ruch",
         "beschreibung": (
-            "Sätze zu Sport aller Art — Fußball, Laufen, Rad, Klettern, Schwimmen, "
-            "Fitnessstudio, Mannschaftssport. Wie man über Training, Wettkämpfe, "
-            "Vereine und Sportevents im Alltag spricht."
+            "Zdania o sporcie — piłka nożna, bieganie, rower, siłownia, "
+            "pływanie. Jak ludzie rozmawiają o treningu, zawodach, "
+            "klubach sportowych."
         ),
         "beispiele": [
-            "Der Halbmarathon war brutal, aber ich hab's geschafft!",
-            "Wann trainiert ihr nächste Woche?",
-            "Mein Knie macht beim Laufen immer noch Probleme.",
-            "Die Champions League gestern war enttäuschend.",
-            "Ich habe jetzt einen Personal Trainer, lohnt sich echt.",
-            "Beim Klettersteig braucht man unbedingt gutes Schuhwerk.",
-            "Triathlon wäre mein nächstes großes Ziel.",
-            "Das Stadion war voll, super Stimmung.",
+            "Półmaraton był ciężki, ale dałem radę!",
+            "Kiedy macie trening w przyszłym tygodniu?",
+            "Moje kolano dalej boli przy bieganiu.",
+            "Liga Mistrzów wczoraj była rozczarowująca.",
+            "Zatrudniłem trenera personalnego, warto.",
+            "Sklepka górska wymaga dobrego obuwia.",
+            "Triathlon to moje następne wielkie wyzwanie.",
+            "Stadion był pełny, super atmosfera.",
         ],
     },
-    "essen": {
-        "name": "Essen & Kochen",
+    "jedzenie": {
+        "name": "Jedzenie & Gotowanie",
         "beschreibung": (
-            "Sätze zu Rezepten, Restaurants, Kochprojekten, Ernährung — "
-            "Alltagsgespräche über Essen: was jemand kocht, Restaurantempfehlungen, "
-            "Ernährungsumstellungen, regionale Spezialitäten."
+            "Zdania o przepisach, restauracjach, gotowaniu, diecie — "
+            "codzienne rozmowy o jedzeniu, rekomendacje restauracji, "
+            "zmiany w diecie, regionalne specjały."
         ),
         "beispiele": [
-            "Ich hab gestern Sauerbraten gemacht, erster Versuch.",
-            "Kennst du ein gutes veganes Restaurant hier in der Nähe?",
-            "Die Maultaschen vom Metzger sind wirklich authentisch.",
-            "Ich probier gerade glutenfreie Ernährung aus.",
-            "Das Rezept für Schwarzwälder Kirschtorte ist gar nicht so schwer.",
-            "Laktoseintoleranz macht Käse kaufen echt kompliziert.",
-            "Wir haben samstags immer Weißwurstfrühstück.",
-            "Das Kölsch zum Schnitzel war perfekt.",
+            "Zrobiłem wczoraj pierogi od zera, wyszły niezłe.",
+            "Znacie dobrą wegańską restaurację w okolicy?",
+            "Pierogi od babci są zawsze najlepsze.",
+            "Próbuję diety bezglutenowej od tygodnia.",
+            "Przepis na sernik wcale nie jest taki trudny.",
+            "Nietolerancja laktozy strasznie komplikuje zakupy.",
+            "W sobotę jemy zawsze śniadanie z rodziną.",
+            "Schabowy z ziemniakami to klasyka polskiej kuchni.",
         ],
     },
-    "medien": {
-        "name": "Bücher, Musik & Film",
+    "media": {
+        "name": "Książki, Filmy & Muzyka",
         "beschreibung": (
-            "Sätze über Bücher, CDs, DVDs, Blu-rays, Hörbücher, Podcasts, Streaming — "
-            "wie man im Alltag darüber spricht: Empfehlungen, Erlebnisse, Meinungen, "
-            "Kauf- und Leihentscheidungen. Natürlicher Umgang mit Medien, kein Katalogstil."
+            "Zdania o książkach, filmach, serialach, podcastach — "
+            "jak ludzie rozmawiają o mediach: rekomendacje, wrażenia, "
+            "opinie. Naturalnie, nie katalogowo."
         ),
         "beispiele": [
-            "Ich hab das Buch letzte Woche ausgelesen, war wirklich gut.",
-            "Hast du das schon als Hörbuch gehört? Ich find das praktischer.",
-            "Die CD liegt bei mir noch irgendwo rum, hör ich kaum noch.",
-            "Ich kaufe kaum noch DVDs, aber für alte Filme lohnt es sich.",
-            "Das Buch hat mir jemand empfohlen, liegt jetzt seit Monaten ungelesen da.",
-            "Die Blu-ray-Qualität ist bei dem Film wirklich beeindruckend.",
-            "Ich höre lieber Podcasts als Musik beim Kochen.",
-            "Das war das beste Buch, das ich seit Jahren gelesen habe.",
+            "Skończyłem czytać książkę w zeszłym tygodniu, była super.",
+            "Słuchałeś tego audiobooka? Fajna sprawa.",
+            "Rzadko kupuję już płyty, wszystko jest w streamingu.",
+            "Ten film na Netflixie jest naprawdę dobry.",
+            "Serial polecił mi znajomy, leży od miesięcy.",
+            "Jakość obrazu na Blu-ray robi wrażenie.",
+            "Wolę słuchać podcastów niż muzyki przy gotowaniu.",
+            "To najlepsza książka jaką przeczytałem w tym roku.",
         ],
     },
-    "haushalt": {
-        "name": "Heimwerken & Haushalt",
+    "dom": {
+        "name": "Majsterkowanie & Dom",
         "beschreibung": (
-            "Sätze rund ums Heimwerken, Reparieren und Einrichten — "
-            "wie man im Alltag darüber spricht: Materialkauf, Werkzeug, "
-            "Do-it-yourself-Projekte, Nachbarschaftshilfe, Tipps."
+            "Zdania o majsterkowaniu, naprawach, urządzaniu — "
+            "codzienne rozmowy: zakupy materiałów, narzędzia, "
+            "projekty DIY, pomoc sąsiedzka."
         ),
         "beispiele": [
-            "Hast du noch Nägel da? Ich will das Bild aufhängen.",
-            "Ich brauch längere Schrauben, die passen nicht.",
-            "Der Dübel ist zu groß für das Loch.",
-            "Kannst du mir kurz die Bohrmaschine leihen?",
-            "Der Akkuschrauber von Bosch ist echt sein Geld wert.",
-            "Ich muss noch das Regal an die Wand dübeln.",
-            "Die Wasserleitung tropft, ich ruf morgen den Klempner.",
-            "Weißt du ob M6 oder M8 Schrauben besser sind?",
+            "Masz gwoździe? Chcę powiesić obraz.",
+            "Potrzebuję dłuższych wkrętów, te nie pasują.",
+            "Kołek jest za duży do tej dziury.",
+            "Pożyczysz mi wiertarkę na chwilę?",
+            "Bosch robi naprawdę dobre elektronarzędzia.",
+            "Muszę przykręcić półkę do ściany.",
+            "Kran kapie od tygodnia, wezwę hydraulika.",
+            "Myślisz że M8 czy M10 będą lepsze?",
         ],
     },
-    "bad": {
-        "name": "Badezimmer & Sanitär",
+    "lazienka": {
+        "name": "Łazienka & Remont",
         "beschreibung": (
-            "Sätze rund ums Badezimmer — Renovierung, Pflege, Einrichtung. "
-            "Wie man über Badplanung, Reparaturen und Badprodukte im Alltag "
-            "spricht: Gespräche mit Familie, Handwerkern, Freunden."
+            "Zdania o łazience — remont, armatura, wykończenie. "
+            "Jak ludzie rozmawiają o planowaniu łazienki, naprawach "
+            "i produktach łazienkowych na co dzień."
         ),
         "beispiele": [
-            "Die Badewanne ist so alt, die muss irgendwann raus.",
-            "Wir überlegen eine ebenerdige Dusche einzubauen.",
-            "Die Silikonfugen in der Dusche sind leider schimmelig.",
-            "Der Wasserhahn tropft schon seit Wochen.",
-            "Neue Fliesen würden dem Bad wirklich gut tun.",
-            "Wir wollen das Bad komplett renovieren lassen.",
-            "Der Sanitär hat gesagt drei Wochen Wartezeit.",
-            "Die Duschkabine ist wirklich mühsam zu reinigen.",
+            "Wanna jest tak stara, że trzeba ją wymienić.",
+            "Myślimy o prysznicu na podłodze, bez brodzika.",
+            "Fugi w kabinie prysznicowej są zapleśniałe.",
+            "Kran cieknie już od tygodni.",
+            "Nowe płytki odmienią tę łazienkę.",
+            "Chcemy zrobić generalny remont łazienki.",
+            "Hydraulik powiedział, że trzy tygodnie czekania.",
+            "Kabina prysznicowa jest strasznie trudna do czyszczenia.",
         ],
     },
-    "wohnen": {
-        "name": "Wohnen & Möbel",
+    "mieszkanie": {
+        "name": "Mieszkanie & Meble",
         "beschreibung": (
-            "Sätze rund um Einrichten, Möbel, Umzug und Wohngestaltung — "
-            "Alltags-Gespräche über neue Möbel, Renovierung, Umzugsstress, "
-            "IKEA-Abenteuer, Bodenbelag, Farben und Raumgefühl."
+            "Zdania o urządzaniu, meblach, przeprowadzce — "
+            "codzienne rozmowy o nowych meblach, remoncie, "
+            "przeprowadzce, IKEA, podłogach i kolorach."
         ),
         "beispiele": [
-            "Wir brauchen noch einen Kleiderschrank für das Schlafzimmer.",
-            "Ich baue gerade eine IKEA-Kommode zusammen, nie wieder.",
-            "Der Umzug war eine Katastrophe, drei Kartons kaputtgegangen.",
-            "Hast du einen guten Tipp für günstigen Laminat?",
-            "Das Sideboard passt perfekt an die Wand im Flur.",
-            "Wir überlegen das Wohnzimmer neu zu streichen.",
-            "Die Couch ist schon so durchgesessen, die muss weg.",
-            "Das Regal aus massivem Holz sieht wirklich schön aus.",
+            "Potrzebujemy jeszcze szafy do sypialni.",
+            "Składam szafkę z IKEA, ostatni raz!",
+            "Przeprowadzka była koszmarem, trzy kartony się rozpadły.",
+            "Znacie dobry i niedrogi laminat?",
+            "Ta komoda pasuje idealnie pod ścianę w przedpokoju.",
+            "Myślimy o malowaniu salonu na nowo.",
+            "Kanapa jest już tak wygnieciona, trzeba wymienić.",
+            "Regał z litego drewna wygląda przepięknie.",
         ],
     },
-    "einkaufen": {
-        "name": "Einkaufen & Supermarkt",
+    "zakupy": {
+        "name": "Zakupy & Supermarket",
         "beschreibung": (
-            "Sätze rund ums Einkaufen — Supermarkt, Wochenmarkt, Lebensmittel, "
-            "Preise, Angebote. Wie man über den Alltags-Einkauf spricht: "
-            "Einkaufslisten, Kassengespräche, Preisvergleiche, Marken."
+            "Zdania o zakupach — supermarkety, targ, ceny, promocje. "
+            "Jak ludzie mówią o codziennych zakupach: listy, "
+            "rozmowy przy kasie, porównywanie cen."
         ),
         "beispiele": [
-            "Ich muss noch schnell zum Supermarkt, hast du eine Liste?",
-            "Die Einkaufsliste hab ich mal wieder vergessen.",
-            "Hast du noch Milch geholt oder soll ich?",
-            "Beim Wochenmarkt ist das Gemüse viel frischer.",
-            "Die Schlangen an der Kasse samstags sind schrecklich.",
-            "Ich versuche weniger Plastikverpackungen zu kaufen.",
-            "Der Discounter ist günstiger aber das Bio-Gemüse fehlt.",
-            "Wir kaufen seit kurzem öfter beim lokalen Bäcker statt im Supermarkt.",
+            "Muszę skoczyć do sklepu, masz listę?",
+            "Znowu zapomniałem listy zakupów w domu.",
+            "Kupisz mleko po drodze?",
+            "Na targu warzywa są o wiele świeższe.",
+            "Kolejki do kasy w sobotę są okropne.",
+            "Staramy się kupować mniej plastiku.",
+            "Dyskont jest tańszy, ale brak w nim bio warzyw.",
+            "Kupujemy chleb u lokalnego piekarza zamiast w supermarkecie.",
         ],
     },
     "auto": {
-        "name": "Auto & Werkstatt",
+        "name": "Auto & Warsztat",
         "beschreibung": (
-            "Sätze rund ums Auto — Werkstatt, TÜV, Reifenwechsel, Pannen, "
-            "Kraftstoff, Pflege. Wie Autofahrer im Alltag über ihr Fahrzeug "
-            "sprechen: Reparaturen, Kosten, Tipps, Ärger mit der Werkstatt."
+            "Zdania o samochodzie — warsztat, przegląd, wymiana opon, "
+            "awarie, paliwo. Jak kierowcy rozmawiają o swoich pojazdach: "
+            "naprawy, koszty, porady."
         ),
         "beispiele": [
-            "Mein Auto muss dringend zum TÜV, schon überfällig.",
-            "Die Bremsscheiben müssen bald gewechselt werden.",
-            "Der Winterreifen-Wechsel ist bei meiner Werkstatt schon gebucht.",
-            "Die Werkstatt hat mal wieder viel zu viel verlangt.",
-            "Kilometerstand über 200.000, aber läuft noch super.",
-            "Hast du das Motoröl schon nachgefüllt?",
-            "Die Klimaanlage macht komische Geräusche seit letztem Sommer.",
-            "Ich wechsle die Felgen immer selbst, ist nicht schwer.",
+            "Muszę jechać na przegląd, już po terminie.",
+            "Tarcze hamulcowe trzeba wkrótce wymienić.",
+            "Wymiana opon na zimowe już zamówiona w warsztacie.",
+            "Warsztat znowu policzył za dużo.",
+            "Przebieg ponad 200 tysięcy, ale silnik chodzi świetnie.",
+            "Dolałeś już oleju silnikowego?",
+            "Klimatyzacja dziwnie hałasuje od zeszłego lata.",
+            "Zmieniam felgi samemu, to wcale nie jest trudne.",
         ],
     },
-    "kleidung": {
-        "name": "Kleidung & Mode",
+    "ubrania": {
+        "name": "Ubrania & Moda",
         "beschreibung": (
-            "Sätze rund um Kleidung, Mode und Shopping — Alltagsgespräche "
-            "über Kauf, Passform, Qualität, Größen, Marken, Waschen und Stil. "
-            "Kein Produktlisting-Stil, echter Austausch unter Menschen."
+            "Zdania o ubraniach, modzie, zakupach odzieżowych — "
+            "codzienne rozmowy o zakupie, rozmiarach, jakości, "
+            "markach, praniu i stylu."
         ),
         "beispiele": [
-            "Ich brauch noch eine Jacke für den Winter.",
-            "Die Hose passt leider nicht mehr nach dem Urlaub.",
-            "Welche Größe nimmst du normalerweise?",
-            "Das T-Shirt ist nach dem ersten Waschen eingegangen.",
-            "Ich kaufe Kleidung lieber in echt als online.",
-            "Der Reisverschluss geht kaputt, typisch billige Qualität.",
-            "Herbst ist meine liebste Jahreszeit wegen der Mode.",
-            "Die Stiefel sind reduziert, ich überleg noch.",
+            "Potrzebuję kurtkę na zimę, jaką polecasz?",
+            "Te spodnie niestety już na mnie nie leżą.",
+            "Jaki rozmiar nosisz normalnie?",
+            "Koszula skurczyła się po pierwszym praniu.",
+            "Wolę kupować ubrania stacjonarnie niż online.",
+            "Zamek się zepsuł, typowa chińska jakość.",
+            "Jesień to moja ulubiona pora roku modowo.",
+            "Te buty są przecenione, jeszcze myślę.",
         ],
     },
-    "logistik": {
-        "name": "Logistik, Pakete & Versand",
+    "logistyka": {
+        "name": "Paczki & Wysyłka",
         "beschreibung": (
-            "Sätze rund um Pakete, Briefe, Versand und Lieferung im Alltag — "
-            "aber auch professionelle Logistik: Spedition, Zollverfahren, Lager, "
-            "Lieferketten, Import/Export. So wie echte Menschen darüber sprechen, "
-            "vom Paket das nicht ankommt bis zur Zollanmeldung."
+            "Zdania o paczkach, listach, wysyłce i dostawie — "
+            "od zwykłych paczek po profesjonalną logistykę: "
+            "spedycja, odprawa celna, magazyn, import/eksport."
         ),
         "beispiele": [
-            "Mein Paket ist schon drei Tage unterwegs, die Sendungsverfolgung hilft nicht.",
-            "Bei DHL muss ich immer zum Paketshop, die liefern nie direkt.",
-            "Was muss ich beim Zoll angeben wenn ich das aus den USA bestelle?",
-            "Die Spedition hat den falschen Liefertermin angegeben, jetzt steht das auf dem Hof.",
-            "Das Zollverfahren bei Importen aus China dauert manchmal ewig.",
-            "Ich hab den Abholschein bekommen, obwohl ich zu Hause war.",
-            "Die Lieferkette war durch den Streik komplett unterbrochen.",
-            "Kannst du das als Expresslieferung aufgeben? Ich brauch das morgen.",
+            "Paczka już trzy dni w drodze, śledzenie nie pomaga.",
+            "Poczta Polska znowu zgubiła paczkę.",
+            "Co muszę zgłosić do cła jak zamawiam z USA?",
+            "Kurier podał zły termin, teraz czekam kolejny dzień.",
+            "Odprawa celna z Chin czasem trwa wieczność.",
+            "Dostałem awizo mimo że byłem w domu.",
+            "Łańcuch dostaw przez strajk był całkiem zerwany.",
+            "Możesz nadać jako ekspres? Potrzebuję na jutro.",
         ],
     },
-    "familie": {
-        "name": "Familie & Kindererziehung",
+    "rodzina": {
+        "name": "Rodzina & Dzieci",
         "beschreibung": (
-            "Sätze rund um Familie, Kinder, Erziehung, Elternschaft — "
-            "von der Windel bis zum Teenager. Alltagsgespräche unter Eltern, "
-            "Großeltern, Geschwister, Familienplanung, Scheidung, Patchwork."
+            "Zdania o rodzinie, dzieciach, wychowaniu — "
+            "od pieluch po nastolatki. Codzienne rozmowy rodziców, "
+            "dziadków, rodzeństwa."
         ),
         "beispiele": [
-            "Unser Kleiner schläft seit Wochen durch, endlich.",
-            "Meine Mutter passt heute auf die Kinder auf, wir haben mal Abend für uns.",
-            "Wie erkläre ich meinem Sohn warum wir uns getrennt haben?",
-            "Der Kindergarten hat wieder zugemacht, ich bin am Limit.",
-            "Mit Teenagern reden ist manchmal echt schwierig.",
-            "Wir überlegen ob wir noch ein zweites Kind wollen.",
-            "Meine Schwiegermutter mischt sich in die Erziehung ein.",
-            "Das Taschengeld erhöhen oder nicht, darüber streiten wir grade.",
+            "Mały wreszcie przesypia noce, ulga!",
+            "Mama dzisiaj zajmuje się dziećmi, mamy wieczór dla siebie.",
+            "Jak wytłumaczyć dziecku rozwód?",
+            "Przedszkole znowu zamknięte, oszaleję.",
+            "Z nastolatkami rozmowa bywa bardzo trudna.",
+            "Myślimy o drugim dziecku, ale boimy się.",
+            "Teściowa wtrąca się w wychowanie, nie wyrabiam.",
+            "Podwyższyć kieszonkowe czy nie? Kłócimy się o to.",
         ],
     },
-    "schule": {
-        "name": "Schule & Studium",
+    "edukacja": {
+        "name": "Szkoła & Studia",
         "beschreibung": (
-            "Sätze über Schule, Uni, Ausbildung, Prüfungen, Hausaufgaben — "
-            "aus Sicht von Schülern, Studenten und Eltern. Noten, Stress, "
-            "Semesterferien, Bafög, Abitur, Master, Dissertation."
+            "Zdania o szkole, studiach, egzaminach, maturze — "
+            "z perspektywy uczniów, studentów i rodziców. "
+            "Oceny, stres, wakacje, stypendium."
         ),
         "beispiele": [
-            "Die Matheprüfung war katastrophal, ich glaub ich fall durch.",
-            "Wann ist eigentlich Anmeldeschluss für das Wintersemester?",
-            "Mein Kind hat wieder die Hausaufgaben vergessen.",
-            "Das Bafög reicht hinten und vorne nicht.",
-            "Ich schreibe nächste Woche meine Bachelorarbeit fertig, hoffe ich.",
-            "Die Lehrerin hat angerufen wegen dem Verhalten in der Schule.",
-            "Welches Fach soll ich studieren? Ich bin so unentschlossen.",
-            "Das Abitur war stressiger als ich dachte.",
+            "Matematyka na maturze była koszmarna, oblewam.",
+            "Kiedy kończy się rekrutacja na studia?",
+            "Moje dziecko znowu zapomniało zeszytu.",
+            "Stypendium ledwo starcza na życie.",
+            "Piszę pracę magisterską, oby do obrony.",
+            "Wychowawczyni dzwoniła z powodu zachowania.",
+            "Jaki kierunek wybrać? Totalnie nie wiem.",
+            "Matura była bardziej stresująca niż myślałem.",
         ],
     },
-    "beziehungen": {
-        "name": "Freundschaft, Beziehungen & Dating",
+    "zwiazki": {
+        "name": "Znajomości & Randki",
         "beschreibung": (
-            "Sätze über Freundschaften, romantische Beziehungen, Dating-Apps, "
-            "Trennung, Eifersucht, Flirten, lange Beziehungen, Vertrauen. "
-            "Wie Menschen im echten Leben darüber reden."
+            "Zdania o przyjaźni, związkach, randkach, aplikacjach — "
+            "rozstania, zazdrość, flirt, długie związki, zaufanie. "
+            "Jak ludzie naprawdę o tym mówią."
         ),
         "beispiele": [
-            "Wir haben uns über Tinder kennengelernt, nach zwei Jahren.",
-            "Meine beste Freundin und ich streiten uns gerade.",
-            "Er hat mich seit drei Tagen nicht mehr geschrieben.",
-            "Wir sind seit zehn Jahren zusammen und überlegen zu heiraten.",
-            "Fernbeziehungen sind echt anstrengend auf Dauer.",
-            "Ich hab Schluss gemacht, es war einfach nicht mehr das Richtige.",
-            "Dating mit Mitte 40 ist total anders als früher.",
-            "Meine Freunde machen sich Sorgen um mich seit der Trennung.",
+            "Poznaliśmy się na Tinderze, jesteśmy razem dwa lata.",
+            "Kłócę się z najlepszą przyjaciółką, nie wiem co robić.",
+            "Nie pisał od trzech dni, chyba go olewam.",
+            "Jesteśmy razem dziesięć lat, myślimy o ślubie.",
+            "Związki na odległość są strasznie męczące.",
+            "Zerwałem, to już nie było to samo.",
+            "Randki po czterdziestce są totalnie inne.",
+            "Znajomi martwią się o mnie od rozstania.",
         ],
     },
-    "arbeit": {
-        "name": "Arbeit & Büro",
+    "praca": {
+        "name": "Praca & Biuro",
         "beschreibung": (
-            "Sätze über den Arbeitsalltag, Büro, Kollegen, Chef, Meetings, "
-            "Homeoffice, Bewerbungen, Kündigung, Überstunden, Gehaltserhöhung. "
-            "So reden Arbeitnehmer und Arbeitgeber im echten Leben."
+            "Zdania o pracy, biurze, współpracownikach, szefie, "
+            "spotkaniach, home office, aplikacjach o pracę, "
+            "pensji. Jak pracownicy rozmawiają naprawdę."
         ),
         "beispiele": [
-            "Das Meeting heute hätte auch eine E-Mail sein können.",
-            "Mein Chef erwartet dass ich am Wochenende erreichbar bin.",
-            "Im Homeoffice bin ich irgendwie produktiver als im Büro.",
-            "Ich bewerbe mich gerade auf eine neue Stelle, bin nervös.",
-            "Die Kollegin nervt mich schon seit Monaten extrem.",
-            "Wir bekommen wieder keine Gehaltserhöhung dieses Jahr.",
-            "Der neue Job zahlt mehr, aber die Fahrt ist viel weiter.",
-            "Ich hab heute meinen letzten Tag, danach bin ich endlich weg.",
+            "To spotkanie mogło być mailem.",
+            "Szef wymaga żebym był dostępny w weekend.",
+            "W home office jestem bardziej produktywny.",
+            "Aplikuję na nową posadę, jestem zestresowany.",
+            "Koleżanka z biura strasznie mnie irytuje.",
+            "Znowu nie będzie podwyżki w tym roku.",
+            "Nowa praca lepiej płaci, ale dojazd jest daleko.",
+            "Mam dzisiaj ostatni dzień, wreszcie odchodzę.",
         ],
     },
-    "finanzen": {
-        "name": "Finanzen & Banking",
+    "finanse": {
+        "name": "Finanse & Bankowość",
         "beschreibung": (
-            "Sätze über Geld, Bank, Konto, Kredit, Versicherung, Altersvorsorge, "
-            "Steuern, Investieren, Sparen, Schulden — wie Normalverbraucher "
-            "darüber sprechen, kein Finanzjargon."
+            "Zdania o pieniądzach, banku, koncie, kredycie, "
+            "ubezpieczeniu, emeryturze, podatkach, inwestowaniu, "
+            "oszczędzaniu — jak zwykli ludzie o tym mówią."
         ),
         "beispiele": [
-            "Der Dispo ist schon wieder am Limit, ich weiß nicht wie das passiert.",
-            "Ich verstehe meine Steuererklärung nicht wirklich.",
-            "Soll ich in ETFs investieren oder lieber auf dem Tagesgeld lassen?",
-            "Die Kreditkarte wurde abgelehnt, peinlich an der Kasse.",
-            "Meine Rentenversicherung reicht hinten und vorne nicht.",
-            "Ich versuche jeden Monat 200 Euro zur Seite zu legen.",
-            "Die Bankgebühren sind gestiegen, ich überleg zu wechseln.",
-            "Wir haben endlich den Kredit für das Haus bekommen.",
+            "Debet znowu na limicie, nie wiem jak to się stało.",
+            "Nie rozumiem swojego PIT-u w ogóle.",
+            "Inwestować w ETF czy trzymać na koncie oszczędnościowym?",
+            "Karta została odrzucona, wstyd przy kasie.",
+            "Emerytura z ZUS mi nie wystarczy.",
+            "Odkładam 500 zł miesięcznie, idzie opornie.",
+            "Opłaty bankowe wzrosły, myślę o zmianie banku.",
+            "W końcu dostaliśmy kredyt na mieszkanie.",
         ],
     },
-    "haustiere": {
-        "name": "Haustiere",
+    "zwierzeta": {
+        "name": "Zwierzęta Domowe",
         "beschreibung": (
-            "Sätze über Hunde, Katzen, Vögel, Fische und andere Haustiere — "
-            "Pflege, Tierarzt, Futter, Erziehung, Verhalten, Verlust. "
-            "So reden Tierbesitzer im Alltag."
+            "Zdania o psach, kotach, ptakach, rybkach — "
+            "opieka, weterynarz, karma, wychowanie, "
+            "zachowanie, strata."
         ),
         "beispiele": [
-            "Mein Hund hat schon wieder die Socken zerkaut.",
-            "Die Katze frisst nur das teure Futter, kein anderes.",
-            "Beim Tierarzt war es mal wieder teurer als erwartet.",
-            "Mein alter Hund muss bald eingeschläfert werden, das tut weh.",
-            "Wo darf ich mit dem Hund im Urlaub hin?",
-            "Die Katze und der Hund mögen sich endlich nach einem Jahr.",
-            "Mein Wellensittich lernt gerade sprechen, ist total süß.",
-            "Im Urlaub muss jemand auf die Katze aufpassen.",
+            "Pies znowu pogryzł kapcie, nie mam siły.",
+            "Kot je tylko droższą karmę, innej nie tknie.",
+            "U weterynarza znowu drożej niż myślałem.",
+            "Stary pies będzie musiał być uśpiony, to boli.",
+            "Gdzie mogę pojechać z psem na wakacje?",
+            "Kot i pies w końcu się polubili po roku.",
+            "Moja papuga uczy się mówić, jest urocza.",
+            "Kto zaopiekuje się kotem na wakacje?",
         ],
     },
-    "wetter": {
-        "name": "Wetter & Jahreszeiten",
+    "pogoda": {
+        "name": "Pogoda & Pory Roku",
         "beschreibung": (
-            "Sätze über das Wetter, Jahreszeiten, Klimawandel, Unwetter, "
-            "Urlaubswetter, Hitze, Schnee — so wie Deutsche und Österreicher "
-            "täglich über das Wetter reden."
+            "Zdania o pogodzie, porach roku, zmianach klimatu, "
+            "burzach, śniegu, upałach — jak Polacy na co dzień "
+            "mówią o pogodzie."
         ),
         "beispiele": [
-            "Es wird wieder mal zu heiß für meinen Geschmack.",
-            "Hoffentlich kommt der Sommer dieses Jahr auch mal nach Bayern.",
-            "Der Schnee macht alles so still, ich mag das.",
-            "Laut Wetterapp soll es morgen endlich aufhören zu regnen.",
-            "Solche Unwetter gab es früher nicht so oft.",
-            "Der Herbst ist meine Lieblingszeit im Jahr.",
-            "Dreißig Grad im Schatten und kein Gewitter in Sicht.",
-            "Der Winter in Wien ist grau aber irgendwie gemütlich.",
+            "Znowu za gorąco jak dla mnie.",
+            "Mam nadzieję że lato przyjdzie w tym roku do Polski.",
+            "Śnieg wszystko wycisza, uwielbiam to.",
+            "Według prognozy jutro wreszcie przestanie padać.",
+            "Takich burz kiedyś nie było tak często.",
+            "Jesień to moja ulubiona pora roku.",
+            "Trzydzieści stopni w cieniu i ani jednej chmury.",
+            "Zima w Krakowie jest szara ale jakoś przytulna.",
         ],
     },
-    "gaming": {
-        "name": "Videospiele & Gaming",
+    "gry": {
+        "name": "Gry Wideo & Gaming",
         "beschreibung": (
-            "Sätze über Videospiele, Konsolen, PC-Gaming, Mobile Games, "
-            "Streaming, Esports — von Gelegenheitsspielern bis Hardcore-Gamern. "
-            "So reden Spieler wirklich miteinander."
+            "Zdania o grach, konsolach, PC, grach mobilnych, "
+            "streamingu, esporcie — od casuali po hardcore'owych "
+            "graczy. Jak gracze naprawdę rozmawiają."
         ),
         "beispiele": [
-            "Das neue Update hat alles kaputt gemacht, ich bin so frustriert.",
-            "Ich zock seit Stunden und merk gar nicht wie spät es wird.",
-            "Welche Grafikkarte lohnt sich gerade für den Preis?",
-            "Das Spiel ist schon zwei Jahre alt aber immer noch top.",
-            "Ich hab endlich den letzten Boss besiegt nach zwanzig Versuchen.",
-            "Mobile Games sind meistens Abzocke mit Mikrotransaktionen.",
-            "Meine Eltern verstehen nicht warum ich so viel zocke.",
-            "Der neue Season-Pass kostet wieder mal zu viel.",
+            "Nowa łatka zepsuła wszystko, jestem wściekły.",
+            "Gram godzinami i nie widzę kiedy leci czas.",
+            "Jaka karta graficzna się teraz opłaca?",
+            "Ta gra ma dwa lata ale dalej jest świetna.",
+            "W końcu pokonałem ostatniego bossa po dwudziestu próbach.",
+            "Gry mobilne to zwykle naciąganie z mikropłatnościami.",
+            "Rodzice nie rozumieją czemu tyle gram.",
+            "Nowy season pass znowu kosztuje za dużo.",
         ],
     },
-    "hobbys": {
-        "name": "Hobbys & Basteln",
+    "hobby": {
+        "name": "Hobby & Zainteresowania",
         "beschreibung": (
-            "Sätze über Hobbys wie Fotografieren, Gärtnern, Stricken, Malen, "
-            "Basteln, Heimwerken, Sammeln, Modellbau, Kochen als Hobby — "
-            "wie Hobbyisten unter sich sprechen."
+            "Zdania o hobby: fotografii, ogrodnictwie, szyciu, "
+            "malowaniu, majsterkowaniu, zbieractwie, "
+            "modelarstwie, gotowaniu jako hobby."
         ),
         "beispiele": [
-            "Ich hab endlich meine erste eigene Tomate geerntet.",
-            "Das Objektiv ist teuer aber für Porträts einfach unschlagbar.",
-            "Ich stricke gerade einen Pullover, der dritte Anlauf klappt besser.",
-            "Die Aquarellfarben laufen immer zu sehr, ich übe noch.",
-            "Mein Modellbau-Projekt nimmt endlich Form an.",
-            "Im Schrebergarten bin ich einfach glücklich.",
-            "Ich hab das alte Rezept meiner Oma endlich perfektioniert.",
-            "Für die Makrofotografie brauche ich unbedingt ein Stativ.",
+            "W końcu zebrałem pierwszego własnego pomidora.",
+            "Obiektyw jest drogi ale do portretów niezastąpiony.",
+            "Robię na drutach sweter, trzecie podejście wychodzi lepiej.",
+            "Farby akwarelowe zawsze za bardzo się rozlewają.",
+            "Mój projekt modelarski nabiera kształtów.",
+            "Na działce jestem po prostu szczęśliwy.",
+            "Przepis babci w końcu dopracowałem do perfekcji.",
+            "Do makrofotografii potrzebuję statywu.",
         ],
     },
-    "reise": {
-        "name": "Reisen & Urlaub",
+    "podroze": {
+        "name": "Podróże & Wakacje",
         "beschreibung": (
-            "Sätze zu Reiseplänen, Urlaubserlebnissen, Sehenswürdigkeiten, "
-            "Transportmitteln, Unterkünften — wie Reisende im Alltag schreiben: "
-            "Tipps, Empfehlungen, Erlebnisberichte, Buchungsthemen."
+            "Zdania o planach podróży, wakacjach, atrakcjach, "
+            "transporcie, noclegach — porady, polecenia, "
+            "relacje, rezerwacje."
         ),
         "beispiele": [
-            "Habt ihr für den Städtetrip schon eine Unterkunft?",
-            "Das Hostel in Lissabon war überraschend schön.",
-            "Mit dem Fernbus nach München ist viel günstiger als die Bahn.",
-            "Reisekrankenversicherung sollte man nie vergessen.",
-            "Die Stadtführung in Prag war wirklich informativ.",
-            "Wohnmobil-Urlaub wäre mal was anderes.",
-            "Das Visum für Indien dauert ewig.",
-            "Der Museumspass lohnt sich bei einem langen Wochenende.",
+            "Macie już nocleg na city break?",
+            "Hostel w Pradze był zaskakująco fajny.",
+            "Autokarem do Krakowa jest taniej niż pociągiem.",
+            "Ubezpieczenie turystyczne to podstawa.",
+            "Wycieczka z przewodnikiem w Wilnie była super.",
+            "Wakacje w camperze byłyby fajną odmianą.",
+            "Wiza do Indii trwa wiecznie.",
+            "Karta muzealna opłaca się przy dłuższym weekendzie.",
         ],
     },
 }
 
-SYSTEM_PROMPT = """Du generierst deutsche Sätze so wie echte Menschen sie auf dem Smartphone tippen.
+SYSTEM_PROMPT = """Generujesz polskie zdania tak jak prawdziwi ludzie piszą na smartfonie.
 
-Wichtige Regeln:
-- Natürlich und alltagsnah — kein Lexikon-Stil, kein Wikipedia, kein Nachrichtenstil
-- Längenmix: etwa die Hälfte 6–10 Wörter, der Rest 10–16 Wörter
-- Korrekte Rechtschreibung und Grammatik
-- Keine Anführungszeichen, keine Nummerierung, kein Kommentar
-- Genau eine Zeile pro Satz, keine Leerzeilen
-- Abwechslungsreich: verschiedene Personen, Kontexte, Tonlagen
-- Jeder Satz beginnt mit einem Großbuchstaben"""
+Ważne zasady:
+- Naturalne i codzienne — nie encyklopedia, nie Wikipedia, nie styl newsowy
+- Mieszanka długości: około połowa 6-10 słów, reszta 10-16 słów
+- Poprawna pisownia i gramatyka
+- Bez cudzysłowów, numeracji, komentarzy
+- Dokładnie jedno zdanie na linię, bez pustych linii
+- Różnorodność: różne osoby, konteksty, tony
+- Każde zdanie zaczyna się wielką literą"""
 
 
 def build_prompt(topic: dict, n: int) -> str:
     beispiele = "\n".join(topic["beispiele"])
     return (
-        f"Thema: {topic['name']}\n"
-        f"Kontext: {topic['beschreibung']}\n\n"
-        f"Beispiele für den richtigen Stil:\n{beispiele}\n\n"
-        f"Schreib jetzt genau {n} weitere solche Sätze zu diesem Thema. "
-        f"Variiere Inhalt, Länge und Perspektive. Einen Satz pro Zeile."
+        f"Temat: {topic['name']}\n"
+        f"Kontekst: {topic['beschreibung']}\n\n"
+        f"Przykłady poprawnego stylu:\n{beispiele}\n\n"
+        f"Napisz teraz dokładnie {n} kolejnych takich zdań na ten temat. "
+        f"Urozmaicaj treść, długość i perspektywę. Jedno zdanie na linię."
     )
 
 

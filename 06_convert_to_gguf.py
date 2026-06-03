@@ -4,11 +4,11 @@ Converts a trained HuggingFace Llama model + SentencePiece tokenizer
 into a GGUF file compatible with FUTO Keyboard.
 
 Input:
-  models/de_keyboard/                     HuggingFace model directory (from 05_train_model.py)
-  data/tokenizer/de_keyboard.model   SentencePiece model (from 04_train_tokenizer.py)
+  models/pl_keyboard/                     HuggingFace model directory (from 05_train_model.py)
+  data/tokenizer/pl_keyboard.model   SentencePiece model (from 04_train_tokenizer.py)
 
 Output:
-  data/de_keyboard.gguf
+  data/pl_keyboard.gguf
 
 Usage:
   .venv_ml/bin/python 06_convert_to_gguf.py
@@ -26,9 +26,9 @@ import torch
 from transformers import LlamaConfig, LlamaForCausalLM
 from gguf import GGUFWriter, GGMLQuantizationType, TokenType
 
-MODEL_HF_DIR = Path("models/de_keyboard")
-SP_MODEL     = Path("data/tokenizer/de_keyboard.model")
-OUT_GGUF     = Path("data/de_keyboard.gguf")
+MODEL_HF_DIR = Path("models/pl_keyboard")
+SP_MODEL     = Path("data/tokenizer/pl_keyboard.model")
+OUT_GGUF     = Path("data/pl_keyboard.gguf")
 
 # FUTO special tokens (must match 04_train_tokenizer.py)
 FUTO_SPECIAL_TOKENS = [
@@ -146,8 +146,8 @@ def convert_one(model_dir: Path, sp_path: Path, out_path: Path,
     writer = GGUFWriter(str(out_path), arch="llama")
 
     writer.add_name(name)
-    writer.add_description("German keyboard language model for FUTO Keyboard")
-    writer.add_languages(["de"])
+    writer.add_description("Polish keyboard language model for FUTO Keyboard")
+    writer.add_languages(["pl"])
 
     writer.add_context_length(config.max_position_embeddings)
     writer.add_embedding_length(config.hidden_size)
@@ -168,7 +168,7 @@ def convert_one(model_dir: Path, sp_path: Path, out_path: Path,
     writer.add_unk_token_id(0)
     writer.add_pad_token_id(3)
 
-    writer.add_string("keyboardlm.languages", "de")
+    writer.add_string("keyboardlm.languages", "pl")
     writer.add_string("keyboardlm.features", "xbu_char_autocorrect_v1 char_embed_mixing_v1")
     writer.add_string("keyboardlm.ext_tokenizer_type", "sentencepiece")
     writer.add_array("keyboardlm.ext_tokenizer_data", sp_bytes)
@@ -212,7 +212,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--name",      default=None,
                         help="Model name embedded in GGUF (overrides auto-generated name)")
-    parser.add_argument("--version",   default="v0.4",
+    parser.add_argument("--version",   default="v1.0",
                         help="Model version string (default: v0.4)")
     parser.add_argument("--model-dir", default=str(MODEL_HF_DIR))
     parser.add_argument("--sp-model",  default=str(SP_MODEL))
@@ -239,7 +239,7 @@ def main():
         for snap in snapshots:
             step_str = snap.name.replace("step_", "").lstrip("0") or "0"
             step_k   = int(step_str) // 1000
-            name     = f"mjb-de-{args.version}-{step_k}k"
+            name     = f"mjb-pl-{args.version}-{step_k}k"
             out_path = Path("data") / f"{name}.gguf"
             convert_one(snap, sp_path, out_path, name, args.no_quantize)
         print("\nAlle Snapshots konvertiert.")
@@ -252,7 +252,7 @@ def main():
         print(f"Fehler: HF-Modell nicht gefunden: {model_dir}", file=sys.stderr)
         sys.exit(1)
 
-    name = args.name or f"mjb-de-{args.version}"
+    name = args.name or f"mjb-pl-{args.version}"
     convert_one(model_dir, sp_path, out_path, name, args.no_quantize)
     print("\nFertig.")
 

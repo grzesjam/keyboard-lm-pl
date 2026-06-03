@@ -14,7 +14,7 @@ Mirrors FUTO Keyboard's TrainingDataGenerator.kt logic exactly:
 Usage:
   .venv_ml/bin/python 18_generate_xbu_data.py
   .venv_ml/bin/python 18_generate_xbu_data.py --proportion 0.33 --correctness 0.8
-  .venv_ml/bin/python 18_generate_xbu_data.py --input data/tatoeba_de.txt --output data/xbu_tatoeba.txt
+    .venv_ml/bin/python 18_generate_xbu_data.py --input data/tatoeba_pl.txt --output data/xbu_tatoeba.txt
 """
 
 import argparse
@@ -155,7 +155,7 @@ def convert_sentence(sentence: str, proportion: float = 0.33, correctness: float
 # ── Sources ───────────────────────────────────────────────────────────────────
 
 DEFAULT_SOURCES = [
-    Path("data/tatoeba_de.txt"),
+    Path("data/tatoeba_pl.txt"),
     *sorted(Path("data").glob("synthetic_*.txt")),
 ]
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Generates high-quality German keyboard training sentences via a local LLM
+Generates high-quality Polish keyboard training sentences via a local LLM
 (Ollama OpenAI-compatible API, e.g. Qwen3.6-27b).
 
 The goal is a small but high-quality set that represents how people
-actually type on a phone — short, natural, varied German.
+actually type on a phone — short, natural, varied Polish.
 
-Output: data/synthetic_de.txt  (one sentence per line)
+Output: data/synthetic_pl.txt  (one sentence per line)
 
 Usage:
   .venv_ml/bin/python 08_generate_synthetic.py [--target 2000] [--model qwen3:27b]
@@ -22,66 +22,66 @@ from pathlib import Path
 import json
 import urllib.request
 
-OUT = Path("data/synthetic_de.txt")
+OUT = Path("data/synthetic_pl.txt")
 
-# ── Themen & Stil-Variationen ──────────────────────────────────────────────────
-# Jeder Eintrag: (thema, konkrete_situation)
+# ── Topics & Style Variations ──────────────────────────────────────────────────
+# Each entry: (topic, concrete_situation)
 TOPICS = [
-    ("Verabredungen",   "Du machst Pläne mit einer Freundin — Uhrzeit, Ort, wer kommt"),
-    ("Essen & Hunger",  "Du schreibst jemandem was du essen willst, gerade isst oder gekocht hast"),
-    ("Arbeit",          "Kurze Nachrichten zwischen Kollegen — Meeting, Aufgabe, Feierabend"),
-    ("Familie",         "Du schreibst deiner Mutter, deinem Partner oder deinen Kindern"),
-    ("Einkaufen",       "Einkaufsliste, was fehlt, ob jemand etwas mitbringen soll"),
-    ("Wetter",          "Jemand kommentiert das Wetter oder fragt danach"),
-    ("Zustimmung/Absage", "Kurze Zu- oder Absagen, Bestätigungen, Absicherungen"),
-    ("Unterwegs",       "Jemand ist in der Bahn, im Auto, zu Fuß — gibt Bescheid"),
-    ("Freizeit",        "Pläne für Wochenende, Sport, Film, Konzert, Spaziergang"),
-    ("Kleine Updates",  "Kurze Statusmeldungen — 'Bin gleich da', 'Hat geklappt', 'Alles gut'"),
-    ("Fragen stellen",  "Alltägliche Fragen die man per Handy stellt"),
-    ("Meinungen",       "Jemand äußert kurz seine Meinung zu etwas Alltäglichem"),
-    ("Glückwünsche",    "Geburtstag, Prüfung, neue Stelle, Geburt — kurze herzliche Nachrichten"),
-    ("Entschuldigungen","Sich kurz entschuldigen, verspätet sein, etwas vergessen haben"),
-    ("Technik/Apps",    "Kurze Sätze rund um Handy, App, Internet, Akku"),
+    ("Spotkania",       "Umawiasz się ze znajomą — godzina, miejsce, kto przychodzi"),
+    ("Jedzenie",        "Piszesz komuś co chcesz zjeść, właśnie jesz lub ugotowałeś"),
+    ("Praca",           "Krótkie wiadomości między współpracownikami — spotkanie, zadanie, koniec dnia"),
+    ("Rodzina",         "Piszesz do mamy, partnera lub dzieci"),
+    ("Zakupy",          "Lista zakupów, czego brakuje, czy ktoś ma coś przynieść"),
+    ("Pogoda",          "Ktoś komentuje pogodę lub pyta o nią"),
+    ("Potwierdzenie/Odmowa", "Krótkie potwierdzenia, odmowy, ustalenia"),
+    ("W drodze",        "Ktoś jest w autobusie, samochodzie, idzie pieszo — daje znać"),
+    ("Wolny czas",      "Plany na weekend, sport, film, koncert, spacer"),
+    ("Krótkie info",    "Krótkie statusy — 'Zaraz będę', 'Udało się', 'Wszystko ok'"),
+    ("Pytania",         "Codzienne pytania które ludzie zadają przez telefon"),
+    ("Opinie",          "Ktoś krótko wyraża opinię o czymś codziennym"),
+    ("Życzenia",        "Urodziny, egzamin, nowa praca — krótkie serdeczne wiadomości"),
+    ("Przeprosiny",     "Krótkie przeprosiny, spóźnienie, zapomnienie"),
+    ("Technologia",     "Krótkie zdania o telefonie, aplikacjach, internecie, baterii"),
 ]
 
 STYLES = [
-    "sehr kurz und knapp (3–6 Wörter), so wie man tippt wenn man es eilig hat",
-    "informell, du-Form, locker wie unter Freunden",
-    "freundlich aber direkt, keine Füllwörter",
-    "als Frage formuliert",
-    "mit einem Ausrufezeichen oder Emoji am Ende (1–2 Sätze mit Emoji, Rest ohne)",
-    "etwas länger (10–15 Wörter), aber immer noch natürlich und flüssig",
+    "bardzo krótko i zwięźle (3-6 słów), jak piszesz gdy się spieszysz",
+    "nieformalnie, na ty, luźno jak między znajomymi",
+    "uprzejmie ale bezpośrednio, bez wypełniaczy",
+    "sformułowane jako pytanie",
+    "z wykrzyknikiem lub emoji na końcu (1-2 zdania z emoji, reszta bez)",
+    "trochę dłuższe (10-15 słów), ale wciąż naturalne i płynne",
 ]
 
-SYSTEM_PROMPT = """Du generierst deutsche Sätze so wie echte Menschen sie auf dem Smartphone tippen.
+SYSTEM_PROMPT = """Generujesz polskie zdania tak jak prawdziwi ludzie piszą na smartfonie.
 
-Wichtige Regeln:
-- Längenmix: etwa die Hälfte 3–7 Wörter, der Rest 8–15 Wörter, kein Satz über 15 Wörter
-- Natürlich und gesprochen, KEIN Schachtelsatz mit Nebensätzen, kein Wikipedia-Stil
-- Korrekte Rechtschreibung und Grammatik
-- Keine Anführungszeichen, keine Nummerierung, kein Kommentar
-- Genau eine Zeile pro Satz, keine Leerzeilen zwischen Sätzen
-- Abwechslungsreich: kein Satz darf dem vorherigen ähneln
+Ważne zasady:
+- Mieszanka długości: około połowa 3-7 słów, reszta 8-15 słów, żadne zdanie nie dłuższe niż 15 słów
+- Naturalne i mówione, BEZ zdań złożonych, nie styl Wikipedii
+- Poprawna pisownia i gramatyka
+- Bez cudzysłowów, numeracji, komentarzy
+- Dokładnie jedno zdanie na linię, bez pustych linii między zdaniami
+- Różnorodność: żadne zdanie nie może być podobne do poprzedniego
 
-Gute Beispiele – mix aus kurz und mittel:
-Ok, bis dann!
-Ich bin gleich fertig.
-Hast du schon gegessen?
-Wann kommst du eigentlich an?
-Ich schaff das heute nicht mehr, sorry.
-Kannst du kurz vorbeikommen, ich bräuchte deine Hilfe.
-Das klingt gut, machen wir so.
-Ich bin in 10 Minuten am Bahnhof.
-Was soll ich mitbringen?
-Wir treffen uns dann um halb acht vor dem Kino."""
+Dobre przykłady — mieszanka krótkich i średnich:
+Ok, do zobaczenia!
+Zaraz kończę.
+Jadłeś już?
+O której właściwie przyjeżdżasz?
+Nie zdążę dzisiaj, sorry.
+Możesz wpaść na chwilę, potrzebuję twojej pomocy.
+Brzmi dobrze, robimy to.
+Będę na stacji za 10 minut.
+Co mam przynieść?
+Spotkajmy się o 19 przed kinem."""
 
 
 def build_user_prompt(topic: str, situation: str, style: str, n: int) -> str:
     return (
-        f"Thema: {topic}\n"
-        f"Situation: {situation}\n"
-        f"Stil: {style}\n\n"
-        f"Schreib genau {n} solche Sätze, einen pro Zeile."
+        f"Temat: {topic}\n"
+        f"Sytuacja: {situation}\n"
+        f"Styl: {style}\n\n"
+        f"Napisz dokładnie {n} takich zdań, jedno na linię."
     )
 
 
@@ -150,10 +150,10 @@ def main():
     errors = 0
     t_start = time.time()
 
-    print(f"Ziel: {args.target} Sätze → {OUT}")
-    print(f"Modell: {args.model}  |  Batch: {args.batch} Sätze/Aufruf")
+    print(f"Target: {args.target} sentences -> {OUT}")
+    print(f"Model: {args.model}  |  Batch: {args.batch} sentences/call")
     if existing:
-        print(f"Vorhandene Sätze: {existing} (wird angehängt)")
+        print(f"Existing sentences: {existing} (will be appended)")
     print()
 
     with OUT.open(mode, encoding="utf-8") as f:
@@ -178,7 +178,7 @@ def main():
                 if not sentences:
                     errors += 1
                     if errors > 5:
-                        print("Zu viele leere Antworten — Modell läuft?", file=sys.stderr)
+                        print("Too many empty responses — model running?", file=sys.stderr)
                         sys.exit(1)
                     continue
 
@@ -191,22 +191,22 @@ def main():
                 rate = collected / elapsed if elapsed > 0 else 0
                 eta = (args.target - collected) / rate if rate > 0 else 0
                 print(f"  [{collected:>5}/{args.target}]  "
-                      f"Thema: {topic:<20}  "
-                      f"{rate:.0f} Sätze/s  "
+                      f"Topic: {topic:<20}  "
+                      f"{rate:.0f} sentences/s  "
                       f"ETA: {eta/60:.1f} min")
 
             except KeyboardInterrupt:
-                print(f"\nAbgebrochen. {collected} Sätze gespeichert.")
+                print(f"\nCancelled. {collected} sentences saved.")
                 break
             except Exception as e:
-                print(f"  Fehler: {e}", file=sys.stderr)
+                print(f"  Error: {e}", file=sys.stderr)
                 errors += 1
                 time.sleep(2)
 
     total = time.time() - t_start
-    print(f"\nFertig: {collected} Sätze in {total/60:.1f} min → {OUT}")
+    print(f"\nDone: {collected} sentences in {total/60:.1f} min -> {OUT}")
     if collected > 0:
-        print(f"Durchschnitt: {total/collected:.2f}s pro Satz")
+        print(f"Average: {total/collected:.2f}s per sentence")
 
 
 if __name__ == "__main__":

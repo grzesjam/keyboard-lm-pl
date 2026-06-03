@@ -27,9 +27,9 @@ from peft import LoraConfig, TaskType, get_peft_model
 from transformers import LlamaForCausalLM, LlamaConfig, PreTrainedTokenizerFast
 import sentencepiece as spm
 
-SP_MODEL   = Path("data/tokenizer/de_keyboard.model")
-BASE_MODEL = Path("models/de_keyboard")
-CORPUS     = Path("data/ccc_congress_de.txt")
+SP_MODEL   = Path("data/tokenizer/pl_keyboard.model")
+BASE_MODEL = Path("models/pl_keyboard")
+CORPUS     = Path("data/ccc_congress_pl.txt")
 OUTPUT_DIR = Path("data/lora_congress")
 
 CONTEXT    = 256

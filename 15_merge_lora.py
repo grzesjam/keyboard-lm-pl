@@ -21,10 +21,10 @@ from peft import PeftModel
 from transformers import LlamaForCausalLM, LlamaTokenizer
 
 # ── Pfade ─────────────────────────────────────────────────────────────────────
-SP_MODEL    = Path("data/tokenizer/de_keyboard.model")
-BASE_MODEL  = Path("models/de_keyboard")
+SP_MODEL    = Path("data/tokenizer/pl_keyboard.model")
+BASE_MODEL  = Path("models/pl_keyboard")
 ADAPTER_DIR = Path("data/adapters")
-MERGED_DIR  = Path("models/de_keyboard_merged")
+MERGED_DIR  = Path("models/pl_keyboard_merged")
 
 
 def main():

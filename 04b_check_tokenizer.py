@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 import sentencepiece as spm
 
-SP_MODEL  = Path("data/tokenizer/de_keyboard.model")
+SP_MODEL  = Path("data/tokenizer/pl_keyboard.model")
 TRAIN_TXT = Path("data/train.txt")
 
 FUTO_SPECIAL_TOKENS = [
@@ -17,27 +17,27 @@ FUTO_SPECIAL_TOKENS = [
     *[f"<CHAR_{chr(c)}>" for c in range(ord("A"), ord("Z") + 1)],
 ]
 
-# Häufige deutsche Wörter → sollten Einzeltokens sein
+# Common Polish words -> should be single tokens
 COMMON_SINGLE_TOKEN_WORDS = [
-    "der", "die", "das", "und", "ist", "in", "von", "mit",
-    "zu", "den", "an", "auf", "für", "nicht", "sich", "auch",
-    "er", "sie", "es", "als", "ich", "du", "wir", "hat",
+    "się", "nie", "to", "na", "z", "do", "w", "i",
+    "ma", "jest", "że", "jak", "od", "po", "za", "co",
+    "ale", "ten", "też", "czy", "bo", "tu", "pan", "tak",
 ]
 
-# Umlaute → dürfen nicht als Byte-Sequenzen (<0xXX>) auftauchen
-UMLAUT_TEST = "Ärger Öl Über Höhe schön wäre Straße"
+# Polish special characters -> must not be byte sequences
+POLISH_CHARS_TEST = "Łódź Gdańsk Warszawa ćma łąka źródło"
 
-# Vollständige Sätze für Roundtrip
+# Full sentences for roundtrip
 ROUNDTRIP_TESTS = [
-    "Das Modell soll deutsche Sprache verstehen.",
-    "Österreich und die Schweiz sprechen auch Deutsch.",
-    "Ärzte, Ökonomen und Übersetzer arbeiten zusammen.",
-    "Ein Satz mit, Satzzeichen! Und einem Ausrufezeichen?",
-    "Bundesverfassungsgericht und Kraftfahrzeugsteuer sind Komposita.",
+    "Model ma rozumieć język polski.",
+    "Łódź i Gdańsk to polskie miasta.",
+    "Piątek, sobota i niedziela to weekend.",
+    "Zdanie z przecinkiem! I wykrzyknikiem?",
+    "Naczelny Sąd Administracyjny orzekł wcześniej.",
 ]
 
-# Für Suffix-Check: Leerzeichen muss am ENDE des Tokens sein (FUTO-Format)
-SUFFIX_TEST_WORD = "Sprache"  # tokenisiert als "Sprache▁" wenn korrekt
+# For suffix check: space must be at END of token (FUTO format)
+SUFFIX_TEST_WORD = "Język"  # tokenizes as "Język▁" when correct
 
 
 def check(label: str, condition: bool, detail: str = "") -> bool:
@@ -75,7 +75,7 @@ def main():
     print("\n── 3. Whitespace-Suffix (treat_whitespace_as_suffix=true)")
     # Tokenisiere "X Y" → das erste Token für X sollte NICHT mit ▁ beginnen
     # und das zweite Token für " " sollte am Ende stehen oder X▁ sein
-    pieces = sp.encode("Sprache Modell", out_type=str)
+    pieces = sp.encode("Język Polski", out_type=str)
     has_suffix = any(p.endswith("▁") or p.endswith("▁") for p in pieces)
     has_prefix = any(p.startswith("▁") or p.startswith("▁") for p in pieces)
     ok = check("Leerzeichen als Suffix (▁ am Ende)", has_suffix, str(pieces[:4]))
@@ -85,7 +85,7 @@ def main():
 
     # ── 4. Umlaute ────────────────────────────────────────────────────────────
     print("\n── 4. Umlauts & Sonderzeichen")
-    pieces = sp.encode(UMLAUT_TEST, out_type=str)
+    pieces = sp.encode(POLISH_CHARS_TEST, out_type=str)
     byte_tokens = [p for p in pieces if p.startswith("<0x")]
     ok = check("Keine Byte-Fallbacks für Umlaute", len(byte_tokens) == 0,
                f"Byte-Tokens gefunden: {byte_tokens}" if byte_tokens else "")

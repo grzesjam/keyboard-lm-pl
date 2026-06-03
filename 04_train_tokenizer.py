@@ -16,19 +16,13 @@ import sentencepiece as spm
 
 # All sources — existing files are used automatically
 SOURCES = [
-    Path("data/tatoeba_de.txt"),
-    Path("data/c4_de.txt"),
-    Path("data/fineweb2_de.txt"),
-    Path("data/parlamentsrevue_de.txt"),
-    Path("data/lnp_de.txt"),
-    Path("data/minkorrekt_de.txt"),
-    Path("data/raumzeit_de.txt"),
-    Path("data/forschergeist_de.txt"),
-    Path("data/cre_de.txt"),
+    Path("data/tatoeba_pl.txt"),
+    Path("data/c4_pl.txt"),
+    Path("data/fineweb2_pl.txt"),
     *sorted(Path("data").glob("synthetic_*.txt")),
 ]
 OUT_DIR     = Path("data/tokenizer")
-MODEL_NAME  = "de_keyboard"
+MODEL_NAME  = "pl_keyboard"
 
 VOCAB_SIZE  = 15_008
 
@@ -69,7 +63,7 @@ def main():
         # FUTO-spezifisch: Leerzeichen am Ende, nicht am Anfang
         treat_whitespace_as_suffix=True,
 
-        # Zeichenabdeckung: 0.9999 deckt praktisch alle deutschen Zeichen ab
+        # Character coverage: 0.9999 covers all Polish characters
         character_coverage=0.9999,
 
         # Sonderzeichen-Handling
@@ -93,15 +87,15 @@ def main():
     print(f"  Modell: {model_path} ({model_path.stat().st_size / 1024:.0f} KB)")
     print(f"  Vokab:  {vocab_path}")
 
-    # Kurzer Selbsttest
+    # Quick self-test
     sp = spm.SentencePieceProcessor(model_file=str(model_path))
-    testfälle = [
-        "Das Modell lernt deutsche Sprache.",
-        "schreiben schreibt schrieb",
-        "Österreich Überzeugung Ärger",
+    test_cases = [
+        "Model uczy się języka polskiego.",
+        "pisać piszę napisał",
+        "Łódź Gdańsk Warszawa",
     ]
-    print("\nSelbsttest:")
-    for text in testfälle:
+    print("\nSelf-test:")
+    for text in test_cases:
         tokens = sp.encode(text, out_type=str)
         print(f"  {text!r}")
         print(f"    → {tokens}")

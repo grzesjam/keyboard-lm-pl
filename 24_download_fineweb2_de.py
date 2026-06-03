@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-Streamt deutsche Texte aus FineWeb2-HQ und extrahiert einzelne Sätze.
+Streams Polish texts from FineWeb2-HQ and extracts individual sentences.
 
-Quelle:  FineWeb2-HQ (HuggingFace FineData)
+Source:  FineWeb2-HQ (HuggingFace FineData)
          https://huggingface.co/datasets/HuggingFaceFW/fineweb-2
-Lizenz:  ODC-By v1.0 (Open Data Commons Attribution)
+License: ODC-By v1.0 (Open Data Commons Attribution)
          https://opendatacommons.org/licenses/by/1-0/
-         Namensnennung: HuggingFace FineData / CommonCrawl
+         Attribution: HuggingFace FineData / CommonCrawl
 
-Konfiguration: deu_Latn (Deutsch)
+Configuration: pol_Latn (Polish)
 
-Output: data/fineweb2_de.txt
+Output: data/fineweb2_pl.txt
 
 Usage:
   .venv_ml/bin/python 24_download_fineweb2_de.py [--target 80000000] [--resume]
@@ -21,15 +21,15 @@ import re
 import sys
 from pathlib import Path
 
-OUT_FILE = Path("data/fineweb2_de.txt")
+OUT_FILE = Path("data/fineweb2_pl.txt")
 
-SPLIT_PAT = re.compile(r'(?<=[.!?])\s+(?=[A-ZÄÖÜ\"\„\[])')
+SPLIT_PAT = re.compile(r'(?<=[.!?])\s+(?=[A-ZĄĆĘŁŃÓŚŹŻ\"\„\[])')
 MIN_WORDS = 5
 MAX_WORDS = 60
 
 
 def split_document(text: str) -> list[str]:
-    """Teilt einen Dokument-Text in einzelne Sätze."""
+    """Splits document text into individual sentences."""
     text = re.sub(r'\n{2,}', '\n', text)
     text = re.sub(r'[ \t]+', ' ', text)
 
@@ -47,7 +47,7 @@ def split_document(text: str) -> list[str]:
             if words < MIN_WORDS or words > MAX_WORDS:
                 continue
             if not re.search(r'[.!?]$', part):
-                part = part  # Kein Punkt nötig, Satz trotzdem nützlich
+                part = part
             sentences.append(part)
     return sentences
 
@@ -55,37 +55,36 @@ def split_document(text: str) -> list[str]:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", type=int, default=80_000_000,
-                        help="Ziel-Satzanzahl (default: 80M)")
+                        help="Target sentence count (default: 80M)")
     parser.add_argument("--resume", action="store_true",
-                        help="Weitermachen wenn Datei bereits existiert")
+                        help="Resume if file already exists")
     args = parser.parse_args()
 
-    # Bereits vorhandene Sätze zählen
     existing = 0
     if OUT_FILE.exists():
         if not args.resume:
-            print(f"Datei existiert bereits: {OUT_FILE}")
-            print("Nutze --resume um weiterzumachen oder lösche die Datei.")
+            print(f"File already exists: {OUT_FILE}")
+            print("Use --resume to continue or delete the file.")
             sys.exit(1)
         existing = sum(1 for _ in OUT_FILE.open(encoding="utf-8"))
-        print(f"Fortsetze ab {existing:,} vorhandenen Sätzen …")
+        print(f"Resuming from {existing:,} existing sentences ...")
 
     if existing >= args.target:
-        print(f"Ziel bereits erreicht: {existing:,} ≥ {args.target:,}")
+        print(f"Target already reached: {existing:,} >= {args.target:,}")
         sys.exit(0)
 
     try:
         from datasets import load_dataset
     except ImportError:
-        print("datasets nicht installiert: pip install datasets")
+        print("datasets not installed: pip install datasets")
         sys.exit(1)
 
-    print(f"Streame FineWeb2-HQ deu_Latn → {OUT_FILE}")
-    print(f"Ziel: {args.target:,} Sätze (bereits {existing:,} vorhanden)\n")
+    print(f"Streaming FineWeb2-HQ pol_Latn -> {OUT_FILE}")
+    print(f"Target: {args.target:,} sentences ({existing:,} already present)\n")
 
     ds = load_dataset(
         "HuggingFaceFW/fineweb-2",
-        "deu_Latn",
+        "pol_Latn",
         split="train",
         streaming=True,
         trust_remote_code=False,
@@ -105,14 +104,14 @@ def main():
 
             if total >= milestone:
                 fout.flush()
-                print(f"  {total/1_000_000:.1f}M Sätze ({docs_processed:,} Dokumente)", flush=True)
+                print(f"  {total/1_000_000:.1f}M sentences ({docs_processed:,} documents)", flush=True)
                 milestone = total + 1_000_000
 
             if total >= args.target:
                 break
 
-    print(f"\nFertig: {total:,} Sätze → {OUT_FILE}")
-    print(f"Dokumente verarbeitet: {docs_processed:,}")
+    print(f"\nDone: {total:,} sentences -> {OUT_FILE}")
+    print(f"Documents processed: {docs_processed:,}")
 
 
 if __name__ == "__main__":

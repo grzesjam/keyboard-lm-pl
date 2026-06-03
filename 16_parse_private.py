@@ -10,7 +10,7 @@ Das Format wird automatisch erkannt. Ausgabe: eine Nachricht pro Zeile.
 Usage:
   .venv_ml/bin/python 16_parse_private.py data/private-signal.txt
   .venv_ml/bin/python 16_parse_private.py data/private-whatsapp.txt
-  .venv_ml/bin/python 16_parse_private.py data/private-*.txt --output data/private_de.txt
+  .venv_ml/bin/python 16_parse_private.py data/private-*.txt --output data/private_pl.txt
   .venv_ml/bin/python 16_parse_private.py data/private-signal.txt --dry-run
 """
 
@@ -50,8 +50,8 @@ QUALITY_SKIP = [
 ]
 
 
-def is_german_text(line: str) -> bool:
-    if not re.search(r"[a-zA-ZäöüÄÖÜß]", line):
+def is_polish_text(line: str) -> bool:
+    if not re.search(r"[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ]", line):
         return False
     for pat in QUALITY_SKIP:
         if pat.match(line.strip()):
@@ -68,7 +68,7 @@ def parse_whatsapp(path: Path) -> list[str]:
     def flush():
         if current:
             msg = " ".join(current).strip()
-            if MIN_LEN <= len(msg) <= MAX_LEN and is_german_text(msg):
+            if MIN_LEN <= len(msg) <= MAX_LEN and is_polish_text(msg):
                 messages.append(msg)
             current.clear()
 
@@ -103,7 +103,7 @@ def parse_signal(path: Path) -> list[str]:
                 continue
             if not (MIN_LEN <= len(stripped) <= MAX_LEN):
                 continue
-            if not is_german_text(stripped):
+            if not is_polish_text(stripped):
                 continue
             messages.append(stripped)
     return messages
@@ -120,7 +120,7 @@ def parse_plain(path: Path) -> list[str]:
                 continue
             if not (MIN_LEN <= len(stripped) <= MAX_LEN):
                 continue
-            if not is_german_text(stripped):
+            if not is_polish_text(stripped):
                 continue
             messages.append(stripped)
     return messages
@@ -157,7 +157,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("files", nargs="+", type=Path)
     parser.add_argument("--output", "-o", type=Path,
-                        default=Path("data/private_de.txt"))
+                        default=Path("data/private_pl.txt"))
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 

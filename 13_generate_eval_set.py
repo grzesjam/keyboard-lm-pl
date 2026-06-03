@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Generiert ein sauberes Eval-Set aus frisch synthetisierten deutschen Sätzen.
-Sätze sind nicht Teil des Trainings-Corpus — geeignet für fairen Modellvergleich.
+Generates a clean eval set from freshly synthesized Polish sentences.
+Sentences are not part of the training corpus — suitable for fair model comparison.
 
 Requires Ollama with qwen3.6:27b running locally.
 
@@ -15,16 +15,16 @@ import urllib.request
 from pathlib import Path
 
 TOPICS = [
-    ("Nachrichten", "lokale Ereignisse, Politik, Gesellschaft"),
-    ("Kochen",      "Kochen, Rezepte, Lebensmittel, Küche"),
-    ("Gartenarbeit","Garten, Pflanzen, Gartenarbeit, Natur"),
-    ("Handwerk",    "Heimwerken, Reparaturen, Werkzeug, Basteln"),
-    ("Gesundheit",  "Gesundheit, Arztbesuch, Sport, Wohlbefinden"),
-    ("Reisen",      "Reisen, Urlaub, Orte, Unterkünfte, Ausflüge"),
-    ("Familie",     "Familienalltag, Kinder, Verwandte, Zuhause"),
-    ("Arbeit",      "Berufsalltag, Büro, Kollegen, Meetings, Karriere"),
-    ("Sport",       "Sport, Training, Fußball, Fitness, Wettkampf"),
-    ("Natur",       "Wetter, Tiere, Landschaft, Jahreszeiten"),
+    ("Wiadomości",   "lokalne wydarzenia, polityka, społeczeństwo"),
+    ("Gotowanie",    "gotowanie, przepisy, jedzenie, kuchnia"),
+    ("Ogród",        "ogród, rośliny, ogrodnictwo, natura"),
+    ("Majsterkowanie", "naprawy, narzędzia, majsterkowanie"),
+    ("Zdrowie",      "zdrowie, wizyta u lekarza, sport, samopoczucie"),
+    ("Podróże",      "podróże, wakacje, miejsca, noclegi, wycieczki"),
+    ("Rodzina",      "życie rodzinne, dzieci, krewni, dom"),
+    ("Praca",        "codzienna praca, biuro, współpracownicy, spotkania, kariera"),
+    ("Sport",        "sport, trening, piłka nożna, fitness, zawody"),
+    ("Natura",       "pogoda, zwierzęta, krajobraz, pory roku"),
 ]
 
 HOST  = "http://localhost:11434"
@@ -39,11 +39,11 @@ def ask_batch(topic: str) -> str:
         "options": {"num_predict": 400, "temperature": 0.9},
         "messages": [
             {"role": "system", "content":
-                "Du generierst natürliche deutsche Alltagssätze für ein Keyboard-Sprachmodell. "
-                "Gib ausschließlich die Sätze aus, einen pro Zeile, ohne Nummerierung, "
-                "ohne Erklärungen, ohne Anführungszeichen."},
+                "Generujesz naturalne polskie zdania codzienne dla modelu językowego klawiatury. "
+                "Podawaj wyłącznie zdania, jedno na linię, bez numeracji, "
+                "bez wyjaśnień, bez cudzysłowów."},
             {"role": "user", "content":
-                f"Schreibe 10 verschiedene natürliche deutsche Sätze zum Thema: {topic}"},
+                f"Napisz 10 różnych naturalnych polskich zdań na temat: {topic}"},
         ],
     }).encode()
     req = urllib.request.Request(f"{HOST}/api/chat", data=payload,
