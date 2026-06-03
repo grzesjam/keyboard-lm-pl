@@ -241,7 +241,28 @@ SOURCES = [
 ]
 
 
-def _process_file(src, tmp_path, fast_matchers, backref_matchers, high_ppl_set, seen_hashes, lock, args):
+def _get_byte_ranges(file_path, num_chunks):
+    file_size = os.path.getsize(file_path)
+    if file_size == 0:
+        return []
+    if num_chunks > file_size:
+        num_chunks = file_size
+
+    chunk_size = file_size // num_chunks
+    boundaries = [0]
+
+    with open(file_path, "rb") as f:
+        for i in range(1, num_chunks):
+            f.seek(i * chunk_size)
+            f.readline()
+            boundaries.append(f.tell())
+    boundaries.append(file_size)
+
+    return [(boundaries[i], boundaries[i+1]) for i in range(len(boundaries) - 1)
+            if boundaries[i] < boundaries[i+1]]
+
+
+def _process_chunk(src, tmp_path, byte_start, byte_end, fast_matchers, backref_matchers, high_ppl_set, seen_hashes, lock, args):
     removed_counts = {entry[1]: 0 for entry in BANNED}
     n_ppl_removed = 0
     n_kept = 0
@@ -250,9 +271,16 @@ def _process_file(src, tmp_path, fast_matchers, backref_matchers, high_ppl_set, 
     n_short_removed = 0
     replacement_counts = {desc: 0 for _, _, desc in REPLACEMENTS}
 
-    with src.open("r", encoding="utf-8") as fin, \
+    label = f"{src.name}[{byte_start}..{byte_end}]"
+
+    with src.open("rb") as fin_raw, \
          (tmp_path.open("w", encoding="utf-8") if not args.dry_run else open(os.devnull, "w")) as fout:
-        for line in fin:
+        fin_raw.seek(byte_start)
+        while fin_raw.tell() < byte_end:
+            line_bytes = fin_raw.readline()
+            if not line_bytes:
+                break
+            line = line_bytes.decode("utf-8")
             n_total += 1
             stripped = line.strip()
 
@@ -302,7 +330,7 @@ def _process_file(src, tmp_path, fast_matchers, backref_matchers, high_ppl_set, 
                     n_kept += 1
 
             if n_total % 5_000_000 == 0:
-                print(f"  {src.name}: {n_total:,} gelesen \u2026", flush=True)
+                print(f"  {label}: {n_total:,} gelesen \u2026", flush=True)
 
     return {
         "src": src,
@@ -364,34 +392,64 @@ def main():
     seen_hashes: set[int] = set()
     total_removed = 0
     lock = threading.Lock()
+    num_workers = os.cpu_count()
 
-    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+    with ThreadPoolExecutor(max_workers=num_workers) as executor:
         futures = {}
         for src in sources:
             if not src.exists():
                 continue
-            tmp = src.with_suffix(".tmp")
-            future = executor.submit(
-                _process_file, src, tmp, fast_matchers, backref_matchers,
-                high_ppl_set, seen_hashes, lock, args
-            )
-            futures[future] = (src, tmp)
+            ranges = _get_byte_ranges(src, num_workers)
+            for chunk_idx, (byte_start, byte_end) in enumerate(ranges):
+                chunk_tmp = src.with_suffix(f".{chunk_idx}.tmp")
+                future = executor.submit(
+                    _process_chunk, src, chunk_tmp, byte_start, byte_end,
+                    fast_matchers, backref_matchers, high_ppl_set,
+                    seen_hashes, lock, args
+                )
+                futures[future] = (src, chunk_idx, chunk_tmp)
 
+        file_chunks: dict[Path, list[tuple[int, dict]]] = {}
         for future in as_completed(futures):
-            src, tmp = futures[future]
+            src, chunk_idx, chunk_tmp = futures[future]
             try:
                 result = future.result()
             except Exception as e:
-                print(f"Fehler bei {src.name}: {e}", file=sys.stderr)
+                print(f"Fehler bei {src.name} Chunk {chunk_idx}: {e}", file=sys.stderr)
                 continue
+            file_chunks.setdefault(src, []).append((chunk_idx, result))
 
-            n_total = result["n_total"]
-            n_kept = result["n_kept"]
-            n_ppl_removed = result["n_ppl_removed"]
-            n_dedup_removed = result["n_dedup_removed"]
-            n_short_removed = result["n_short_removed"]
-            removed_counts = result["removed_counts"]
-            replacement_counts = result["replacement_counts"]
+        for src, chunks in file_chunks.items():
+            chunks.sort(key=lambda x: x[0])
+
+            final_tmp = src.with_suffix(".tmp")
+            n_total = 0
+            n_kept = 0
+            n_ppl_removed = 0
+            n_dedup_removed = 0
+            n_short_removed = 0
+            removed_counts: dict[str, int] = {}
+            replacement_counts: dict[str, int] = {}
+
+            if not args.dry_run:
+                with final_tmp.open("w", encoding="utf-8") as fout:
+                    for _, result in chunks:
+                        chunk_tmp = result["tmp_path"]
+                        with chunk_tmp.open("r", encoding="utf-8") as fin:
+                            for line in fin:
+                                fout.write(line)
+                        chunk_tmp.unlink()
+
+            for _, result in chunks:
+                n_total += result["n_total"]
+                n_kept += result["n_kept"]
+                n_ppl_removed += result["n_ppl_removed"]
+                n_dedup_removed += result["n_dedup_removed"]
+                n_short_removed += result["n_short_removed"]
+                for desc, count in result["removed_counts"].items():
+                    removed_counts[desc] = removed_counts.get(desc, 0) + count
+                for desc, count in result["replacement_counts"].items():
+                    replacement_counts[desc] = replacement_counts.get(desc, 0) + count
 
             n_removed = n_total - n_kept
             total_removed += n_removed
@@ -399,7 +457,7 @@ def main():
             if n_removed == 0:
                 print(f"{src}: keine Treffer ({n_total:,} S\xe4tze)")
                 if not args.dry_run:
-                    tmp.unlink()
+                    final_tmp.unlink()
                 continue
 
             print(f"{src}: {n_removed:,} S\xe4tze entfernt (von {n_total:,})")
@@ -418,7 +476,7 @@ def main():
                     print(f"  {count:>8,}\xd7  {desc}")
 
             if not args.dry_run:
-                tmp.replace(src)
+                final_tmp.replace(src)
 
     print(f"\nGesamt entfernt: {total_removed:,}")
     if args.dry_run:
