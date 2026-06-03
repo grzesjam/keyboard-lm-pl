@@ -26,7 +26,9 @@ from pathlib import Path
 
 import threading
 import time
+from collections import deque
 import torch
+from torch.utils.data import IterableDataset, get_worker_info
 from transformers import (
     LlamaConfig,
     LlamaForCausalLM,
@@ -36,7 +38,6 @@ from transformers import (
     TrainingArguments,
     DataCollatorForLanguageModeling,
 )
-from datasets import IterableDataset
 
 def gpu_stats() -> str:
     """Gibt GPU-Auslastung und VRAM zurück."""
@@ -84,6 +85,8 @@ MODEL_CONFIG = dict(
 CONTEXT_LEN        = 256
 BATCH_SIZE         = 64    # v0.5: 64 — 7900 XTX
 GRAD_ACCUM         = 4     # effektive Batchgröße 256
+TOKENIZE_BATCH     = 1024
+DATALOADER_WORKERS = 2
 LR                 = 3e-4
 LR_WARMUP_STEPS    = 1000
 WEIGHT_DECAY       = 0.1
@@ -173,23 +176,39 @@ def mixed_generator(no_synthetic: bool = False):
                 break
 
 
-def tokenize_and_chunk(tokenizer: LlamaTokenizer, context_len: int, no_synthetic: bool = False):
-    bos = tokenizer.bos_token_id
-    eos = tokenizer.eos_token_id
+class TokenChunkDataset(IterableDataset):
+    def __init__(self, tokenizer: LlamaTokenizer, context_len: int, no_synthetic: bool = False):
+        self.tokenizer = tokenizer
+        self.context_len = context_len
+        self.no_synthetic = no_synthetic
 
-    def gen():
-        buf = []
-        for line in mixed_generator(no_synthetic=no_synthetic):
-            if not line:
+    def __iter__(self):
+        worker = get_worker_info()
+        if worker is not None:
+            random.seed(worker.seed)
+
+        bos = self.tokenizer.bos_token_id
+        eos = self.tokenizer.eos_token_id
+        buf = deque()
+        lines = []
+
+        for line in mixed_generator(no_synthetic=self.no_synthetic):
+            if line:
+                lines.append(line)
+            if len(lines) < TOKENIZE_BATCH:
                 continue
-            ids = tokenizer.encode(line, add_special_tokens=False)
-            buf += [bos] + ids + [eos]
-            while len(buf) >= context_len:
-                chunk = buf[:context_len]
-                buf   = buf[context_len:]
-                yield {"input_ids": chunk}
 
-    return IterableDataset.from_generator(gen)
+            for ids in self.tokenizer(lines, add_special_tokens=False)["input_ids"]:
+                buf.append(bos)
+                buf.extend(ids)
+                buf.append(eos)
+                while len(buf) >= self.context_len:
+                    yield {"input_ids": [buf.popleft() for _ in range(self.context_len)]}
+            lines.clear()
+
+
+def tokenize_and_chunk(tokenizer: LlamaTokenizer, context_len: int, no_synthetic: bool = False):
+    return TokenChunkDataset(tokenizer, context_len, no_synthetic=no_synthetic)
 
 
 # ── Milestone-Callback ────────────────────────────────────────────────────────
@@ -242,6 +261,11 @@ def build_model(tokenizer: LlamaTokenizer) -> LlamaForCausalLM:
 # ── Training ──────────────────────────────────────────────────────────────────
 
 def main():
+    torch.set_float32_matmul_precision("high")
+    if torch.cuda.is_available():
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--no-synthetic", action="store_true")
     parser.add_argument("--steps",  type=int, default=200_000)
@@ -288,10 +312,11 @@ def main():
         warmup_steps=LR_WARMUP_STEPS,
         weight_decay=WEIGHT_DECAY,
         max_grad_norm=MAX_GRAD_NORM,
-        optim="adamw_torch",
+        optim="adamw_torch_fused",
 
         gradient_checkpointing=False,
         bf16=True,
+        tf32=True,
 
         logging_steps=LOGGING_STEPS,
         save_steps=SAVE_STEPS,
@@ -299,7 +324,10 @@ def main():
 
         do_eval=False,
         seed=42,
-        dataloader_num_workers=0,
+        dataloader_num_workers=DATALOADER_WORKERS,
+        dataloader_prefetch_factor=4,
+        dataloader_persistent_workers=True,
+        dataloader_pin_memory=True,
         report_to="none",
     )
 
@@ -319,6 +347,7 @@ def main():
     print(f"\nStarting training {args.version} for {args.steps:,} steps ...")
     print(f"  Effective batch size: {BATCH_SIZE * GRAD_ACCUM}  (batch={BATCH_SIZE}, accum={GRAD_ACCUM})")
     print(f"  Context:              {CONTEXT_LEN} tokens")
+    print(f"  DataLoader workers:   {DATALOADER_WORKERS}")
     print(f"  Snapshots at:         {sorted(milestones)}")
 
     # Background-Thread: meldet alle 20s den Status während der Compile-Phase
@@ -342,4 +371,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
