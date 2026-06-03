@@ -19,6 +19,8 @@ import html
 import os
 import re
 import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 # ── Unerwünschte Muster ───────────────────────────────────────────────────────
@@ -239,6 +241,82 @@ SOURCES = [
 ]
 
 
+def _process_file(src, tmp_path, fast_matchers, backref_matchers, high_ppl_set, seen_hashes, lock, args):
+    removed_counts = {entry[1]: 0 for entry in BANNED}
+    n_ppl_removed = 0
+    n_kept = 0
+    n_total = 0
+    n_dedup_removed = 0
+    n_short_removed = 0
+    replacement_counts = {desc: 0 for _, _, desc in REPLACEMENTS}
+
+    with src.open("r", encoding="utf-8") as fin, \
+         (tmp_path.open("w", encoding="utf-8") if not args.dry_run else open(os.devnull, "w")) as fout:
+        for line in fin:
+            n_total += 1
+            stripped = line.strip()
+
+            if stripped in high_ppl_set:
+                n_ppl_removed += 1
+                continue
+
+            if args.dedup:
+                h = int.from_bytes(hashlib.md5(stripped.encode()).digest()[:8], "little")
+                with lock:
+                    if h in seen_hashes:
+                        n_dedup_removed += 1
+                        continue
+                    seen_hashes.add(h)
+
+            drop = False
+            for combined_pat, individuals in fast_matchers:
+                if combined_pat.search(line):
+                    for pat, desc in individuals:
+                        if pat.search(line):
+                            removed_counts[desc] += 1
+                            drop = True
+                            break
+                    if drop:
+                        break
+            if not drop:
+                for pat, desc in backref_matchers:
+                    if pat.search(line):
+                        removed_counts[desc] += 1
+                        drop = True
+                        break
+
+            if not drop:
+                for pat, repl, desc in REPLACEMENTS:
+                    new_line, n = pat.subn(repl, line)
+                    if n:
+                        replacement_counts[desc] += n
+                        line = new_line
+                line = line.strip()
+                if line:
+                    line = line[0].upper() + line[1:]
+                words = line.count(' ') + 1
+                if words < MIN_WORDS or words > MAX_WORDS:
+                    n_short_removed += 1
+                else:
+                    fout.write(line + "\n")
+                    n_kept += 1
+
+            if n_total % 5_000_000 == 0:
+                print(f"  {src.name}: {n_total:,} gelesen \u2026", flush=True)
+
+    return {
+        "src": src,
+        "tmp_path": tmp_path,
+        "n_total": n_total,
+        "n_kept": n_kept,
+        "n_ppl_removed": n_ppl_removed,
+        "n_dedup_removed": n_dedup_removed,
+        "n_short_removed": n_short_removed,
+        "removed_counts": removed_counts,
+        "replacement_counts": replacement_counts,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true",
@@ -285,99 +363,62 @@ def main():
     sources = [Path(f) for f in args.files] if args.files else SOURCES
     seen_hashes: set[int] = set()
     total_removed = 0
+    lock = threading.Lock()
 
-    for src in sources:
-        if not src.exists():
-            continue
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        futures = {}
+        for src in sources:
+            if not src.exists():
+                continue
+            tmp = src.with_suffix(".tmp")
+            future = executor.submit(
+                _process_file, src, tmp, fast_matchers, backref_matchers,
+                high_ppl_set, seen_hashes, lock, args
+            )
+            futures[future] = (src, tmp)
 
-        tmp = src.with_suffix(".tmp")
-        removed_counts = {entry[1]: 0 for entry in BANNED}
-        n_ppl_removed = 0
-        n_kept = 0
-        n_total = 0
-        n_dedup_removed = 0
-        n_short_removed = 0
-        replacement_counts = {desc: 0 for _, _, desc in REPLACEMENTS}
+        for future in as_completed(futures):
+            src, tmp = futures[future]
+            try:
+                result = future.result()
+            except Exception as e:
+                print(f"Fehler bei {src.name}: {e}", file=sys.stderr)
+                continue
 
-        with src.open("r", encoding="utf-8") as fin, \
-             (tmp.open("w", encoding="utf-8") if not args.dry_run else open(os.devnull, "w")) as fout:
-            for line in fin:
-                n_total += 1
-                stripped = line.strip()
+            n_total = result["n_total"]
+            n_kept = result["n_kept"]
+            n_ppl_removed = result["n_ppl_removed"]
+            n_dedup_removed = result["n_dedup_removed"]
+            n_short_removed = result["n_short_removed"]
+            removed_counts = result["removed_counts"]
+            replacement_counts = result["replacement_counts"]
 
-                if stripped in high_ppl_set:
-                    n_ppl_removed += 1
-                    continue
+            n_removed = n_total - n_kept
+            total_removed += n_removed
 
-                if args.dedup:
-                    h = int.from_bytes(hashlib.md5(stripped.encode()).digest()[:8], "little")
-                    if h in seen_hashes:
-                        n_dedup_removed += 1
-                        continue
-                    seen_hashes.add(h)
+            if n_removed == 0:
+                print(f"{src}: keine Treffer ({n_total:,} S\xe4tze)")
+                if not args.dry_run:
+                    tmp.unlink()
+                continue
 
-                drop = False
-                for combined_pat, individuals in fast_matchers:
-                    if combined_pat.search(line):
-                        for pat, desc in individuals:
-                            if pat.search(line):
-                                removed_counts[desc] += 1
-                                drop = True
-                                break
-                        if drop:
-                            break
-                if not drop:
-                    for pat, desc in backref_matchers:
-                        if pat.search(line):
-                            removed_counts[desc] += 1
-                            drop = True
-                            break
+            print(f"{src}: {n_removed:,} S\xe4tze entfernt (von {n_total:,})")
+            if n_short_removed:
+                print(f"  {n_short_removed:>8,}\xd7  zu kurz (< {MIN_WORDS} Woerter nach Cleaning)")
+            if n_ppl_removed:
+                print(f"  {n_ppl_removed:>8,}\xd7  hohe Perplexity (--high-ppl)")
+            if n_dedup_removed:
+                print(f"  {n_dedup_removed:>8,}\xd7  Duplikat (--dedup)")
+            for desc, count in removed_counts.items():
+                if count:
+                    print(f"  {count:>8,}\xd7  {desc}")
 
-                if not drop:
-                    for pat, repl, desc in REPLACEMENTS:
-                        new_line, n = pat.subn(repl, line)
-                        if n:
-                            replacement_counts[desc] += n
-                            line = new_line
-                    line = line.strip()
-                    if line:
-                        line = line[0].upper() + line[1:]
-                    words = line.count(' ') + 1
-                    if words < MIN_WORDS or words > MAX_WORDS:
-                        n_short_removed += 1
-                    else:
-                        fout.write(line + "\n")
-                        n_kept += 1
+            for desc, count in replacement_counts.items():
+                if count:
+                    print(f"  {count:>8,}\xd7  {desc}")
 
-                if n_total % 5_000_000 == 0:
-                    print(f"  {src.name}: {n_total:,} gelesen …", flush=True)
-
-        n_removed = n_total - n_kept
-        total_removed += n_removed
-
-        if n_removed == 0:
-            print(f"{src}: keine Treffer ({n_total:,} S\xe4tze)")
             if not args.dry_run:
-                tmp.unlink()
-            continue
-
-        print(f"{src}: {n_removed:,} S\xe4tze entfernt (von {n_total:,})")
-        if n_short_removed:
-            print(f"  {n_short_removed:>8,}\xd7  zu kurz (< {MIN_WORDS} Woerter nach Cleaning)")
-        if n_ppl_removed:
-            print(f"  {n_ppl_removed:>8,}\xd7  hohe Perplexity (--high-ppl)")
-        if n_dedup_removed:
-            print(f"  {n_dedup_removed:>8,}\xd7  Duplikat (--dedup)")
-        for desc, count in removed_counts.items():
-            if count:
-                print(f"  {count:>8,}\xd7  {desc}")
-
-        for desc, count in replacement_counts.items():
-            if count:
-                print(f"  {count:>8,}\xd7  {desc}")
-
-        if not args.dry_run:
-            tmp.replace(src)
+                tmp.replace(src)
 
     print(f"\nGesamt entfernt: {total_removed:,}")
     if args.dry_run:
