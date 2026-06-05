@@ -5,13 +5,14 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = "==3.12.11"
 dependencies = [
+    "bitsandbytes>=0.45.0",
     "datasets>=4.8.5",
     "gguf>=0.19.0",
     "protobuf>=7.35.0",
     "sentencepiece>=0.2.1",
     "tokenizers==0.21.0",
     "torch",
-    "transformers>=4.49,<5",
+    "transformers[torch]>=4.49,<5",
 ]
 
 [[tool.uv.index]]
