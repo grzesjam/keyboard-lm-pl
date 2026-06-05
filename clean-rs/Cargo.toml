@@ -1,0 +1,14 @@
+[package]
+name = "clean-training-data"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+regex = "1"
+fancy-regex = "0.14"
+rayon = "1"
+dashmap = "6"
+md-5 = "0.10"
+encoding_rs = "0.8"
+anyhow = "1"
