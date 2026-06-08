@@ -17,8 +17,9 @@ import sentencepiece as spm
 # All sources — existing files are used automatically
 SOURCES = [
     Path("data/tatoeba_pl.txt"),
-    Path("data/c4_pl.txt"),
-    Path("data/fineweb2_pl.txt"),
+    # Path("data/c4_pl.txt"),
+    # Path("data/fineweb2_pl.txt"),
+    Path("data/opensubtitles_pl.txt"),
     *sorted(Path("data").glob("synthetic_*.txt")),
 ]
 OUT_DIR     = Path("data/tokenizer")

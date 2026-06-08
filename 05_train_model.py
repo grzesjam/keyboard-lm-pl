@@ -58,6 +58,7 @@ TATOEBA_TXT         = Path("data/tatoeba_pl.txt")
 C4_TXT              = Path("data/c4_pl.txt")
 FINEWEB2_TXT        = Path("data/fineweb2_pl.txt")
 SYNTHETIC_GLOB      = "data/synthetic_*.txt"
+OPENSUBTITLES_TXT   = Path("data/opensubtitles_pl.txt")
 PRIVATE_TXT         = Path("data/private_pl.txt")
 OUTPUT_DIR          = Path("models/pl_keyboard")
 
@@ -66,6 +67,7 @@ TATOEBA_WEIGHT        = 3   # clean, everyday language
 C4_WEIGHT             = 1   # large background corpus
 FINEWEB2_WEIGHT       = 1   # large background corpus
 SYNTHETIC_WEIGHT      = 3   # keyboard-specific
+OPENSUBTITLES_WEIGHT  = 2   # conversational dialogues
 PRIVATE_WEIGHT        = 2   # real writing style
 
 # ── Modell-Architektur (FUTO-kompatibel) ──────────────────────────────────────
@@ -154,6 +156,8 @@ def mixed_generator(no_synthetic: bool = False):
         for syn in sorted(Path(".").glob(SYNTHETIC_GLOB)):
             if _has_content(syn):
                 sources.append((line_generator(syn), SYNTHETIC_WEIGHT))
+    if _has_content(OPENSUBTITLES_TXT):
+        sources.append((line_generator(OPENSUBTITLES_TXT), OPENSUBTITLES_WEIGHT))
     if _has_content(PRIVATE_TXT):
         sources.append((line_generator(PRIVATE_TXT), PRIVATE_WEIGHT))
 
