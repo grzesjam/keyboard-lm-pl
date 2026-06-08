@@ -321,6 +321,7 @@ def main():
         gradient_checkpointing=False,
         bf16=True,
         tf32=True,
+        torch_compile=True,
 
         logging_steps=LOGGING_STEPS,
         save_steps=SAVE_STEPS,
